@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AideRadar — Trouvez les aides adaptées à votre entreprise</title>
+  <meta name="description" content="AideRadar aide les TPE et indépendants à repérer rapidement les aides et subventions potentiellement adaptées à leur projet." />
+  <style>
+    :root{
+      --bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;
+      --primary:#2563eb;--primary2:#1d4ed8;--line:#e4e7ec;
+      --good:#067647;--goodbg:#ecfdf3;--mid:#175cd3;--midbg:#eff8ff;
+      --warn:#b54708;--warnbg:#fffaeb;--bad:#b42318;--badbg:#fef3f2;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:780px;margin:0 auto;padding:20px 16px 60px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;margin-bottom:26px}
+    .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#60a5fa);display:grid;place-items:center;color:white}
+    h1{font-size:34px;line-height:1.08;margin:0 0 12px;letter-spacing:-.8px}
+    .lead{font-size:17px;line-height:1.5;color:var(--muted);margin:0 0 22px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 30px rgba(16,24,40,.05)}
+    label{display:block;font-weight:650;margin:16px 0 7px}
+    label:first-child{margin-top:0}
+    input,select{width:100%;border:1px solid #d0d5dd;background:white;border-radius:12px;padding:14px;font-size:16px;color:var(--text);outline:none}
+    input:focus,select:focus{border-color:#84adff;box-shadow:0 0 0 4px #eff4ff}
+    button{width:100%;border:0;border-radius:13px;background:var(--primary);color:white;font-weight:750;font-size:17px;padding:15px;margin-top:18px}
+    button:active{background:var(--primary2);transform:translateY(1px)}
+    .small{font-size:13px;color:var(--muted);line-height:1.5;margin:12px 2px 0}
+    .source-note{margin:18px 0 0;padding:12px 14px;border-radius:12px;background:#f9fafb;color:#475467;font-size:13px;line-height:1.45}
+    #results{display:none;margin-top:22px}
+    .result{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:12px}
+    .badge{display:inline-block;font-size:13px;font-weight:750;padding:6px 9px;border-radius:999px}
+    .high{background:var(--goodbg);color:var(--good)}
+    .medium{background:var(--midbg);color:var(--mid)}
+    .check{background:var(--warnbg);color:var(--warn)}
+    .result h3{margin:12px 0 7px;font-size:20px}
+    .meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+    .why{background:#f9fafb;border-radius:12px;padding:12px;font-size:14px;line-height:1.48}
+    .warning{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:10px}
+    .source{display:inline-block;margin-top:12px;color:var(--primary);font-weight:700;text-decoration:none}
+    .empty{background:white;border:1px dashed #d0d5dd;border-radius:16px;padding:20px;color:var(--muted)}
+    footer{margin-top:30px;color:var(--muted);font-size:12px;line-height:1.5}
+    @media(max-width:480px){h1{font-size:30px}.lead{font-size:16px}.wrap{padding-top:18px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand"><div class="logo">€</div>AideRadar</div>
+    <h1>Repérez rapidement les aides adaptées à votre entreprise.</h1>
+    <p class="lead">Décrivez votre activité et votre projet. AideRadar classe les dispositifs qui semblent les plus pertinents et renvoie vers leur source officielle.</p>
+
+    <section class="card">
+      <form id="radarForm">
+        <label for="activity">Votre activité</label>
+        <select id="activity" required>
+          <option value="">Choisir…</option>
+          <option value="btp">Artisan / BTP</option>
+          <option value="commerce">Commerce</option>
+          <option value="transport">Transport</option>
+          <option value="restauration">Restauration</option>
+          <option value="services">Services</option>
+          <option value="industrie">Industrie</option>
+          <option value="agri">Agriculture / agroalimentaire</option>
+          <option value="other">Autre</option>
+        </select>
+
+        <label for="dept">Département</label>
+        <input id="dept" inputmode="numeric" maxlength="3" placeholder="Ex. 89" required />
+
+        <label for="employees">Nombre de salariés</label>
+        <select id="employees" required>
+          <option value="">Choisir…</option>
+          <option value="0">0</option>
+          <option value="1-9">1 à 9</option>
+          <option value="10-49">10 à 49</option>
+          <option value="50+">50 ou plus</option>
+        </select>
+
+        <label for="project">Votre projet</label>
+        <select id="project" required>
+          <option value="">Choisir…</option>
+          <option value="vehicle">Acheter / remplacer un véhicule</option>
+          <option value="equipment">Acheter du matériel</option>
+          <option value="energy">Réduire les dépenses d'énergie</option>
+          <option value="heat">Produire de la chaleur renouvelable</option>
+          <option value="solar">Installer du solaire thermique</option>
+          <option value="geo">Géothermie / aérothermie</option>
+          <option value="biomass">Biomasse / chaufferie bois</option>
+          <option value="methane">Méthanisation</option>
+          <option value="wasteheat">Récupération de chaleur fatale</option>
+          <option value="ecodesign">Écoconception</option>
+          <option value="digital">Numériser / créer un site / logiciel</option>
+          <option value="hire">Recruter / former</option>
+          <option value="apprentice">Embaucher un apprenti</option>
+          <option value="create">Créer ou reprendre une entreprise</option>
+          <option value="other">Autre projet</option>
+        </select>
+
+        <label for="budget">Budget du projet (€)</label>
+        <input id="budget" type="number" min="0" step="100" placeholder="Ex. 25000" required />
+
+        <button type="submit">Trouver mes aides</button>
+        <p class="small">V1.1 : base de test constituée de dispositifs réels avec liens officiels. Le classement est indicatif et ne vaut pas confirmation d'éligibilité.</p>
+      </form>
+    </section>
+
+    <div class="source-note">
+      Sources utilisées dans ce prototype : Entreprendre.Service-Public.fr et ADEME / Agir pour la transition écologique. Les critères complets doivent toujours être vérifiés sur la page officielle avant toute dépense ou demande.
+    </div>
+
+    <section id="results">
+      <h2>Vos résultats</h2>
+      <div id="resultList"></div>
+    </section>
+
+    <footer>
+      AideRadar est un outil d'orientation. Il ne garantit ni l'éligibilité, ni l'obtention d'une aide, ni son montant. Les dispositifs évoluent régulièrement.
+    </footer>
+  </main>
+
+  <script>
+    const aids = [
+      {
+        title:"ACRE — Aide à la création ou à la reprise d'une entreprise",
+        projects:["create"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:0,
+        level:"high", label:"Très pertinent",
+        amount:"Exonération temporaire de cotisations sociales selon situation",
+        why:"Ce dispositif vise les personnes qui créent ou reprennent une activité professionnelle.",
+        warn:"Les conditions diffèrent notamment entre micro-entrepreneurs et autres formes d'entreprise.",
+        url:"https://entreprendre.service-public.fr/vosdroits/F11677"
+      },
+      {
+        title:"Recherche de financements pour créer ou reprendre une entreprise",
+        projects:["create"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:0,
+        level:"medium", label:"Pertinent",
+        amount:"Plusieurs formes possibles : aides, prêts, exonérations, accompagnement",
+        why:"Le portail officiel recense plusieurs voies de financement et d'accompagnement pour une création ou reprise.",
+        warn:"Ce n'est pas une aide unique : il faut identifier les dispositifs adaptés à votre situation.",
+        url:"https://entreprendre.service-public.fr/vosdroits/F35930"
+      },
+      {
+        title:"Aides à l'embauche d'un apprenti",
+        projects:["apprentice","hire"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:0,
+        level:"high", label:"Très pertinent",
+        amount:"Montant variable selon effectif, contrat et règles en vigueur",
+        why:"Les entreprises qui embauchent un apprenti peuvent bénéficier d'une aide sous conditions.",
+        warn:"Les règles et montants dépendent de la date du contrat et de l'effectif.",
+        url:"https://entreprendre.service-public.fr/vosdroits/F23556"
+      },
+      {
+        title:"Installations de géothermie de surface et d'aérothermie — Fonds Chaleur",
+        projects:["geo","heat","energy"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:5000,
+        level:"high", label:"Très pertinent",
+        amount:"Aide à l'investissement — montant selon projet",
+        why:"Le Fonds Chaleur ADEME peut soutenir des installations de production de chaleur ou de froid renouvelable par géothermie ou aérothermie.",
+        warn:"Une étude préalable et des critères techniques peuvent être exigés.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installations-production-chaleur-froid-renouvelable-a-partir-geothermie"
+      },
+      {
+        title:"Production de chaleur par géothermie profonde — Fonds Chaleur",
+        projects:["geo","heat"], activities:["industrie","services","agri","other"], employee:["1-9","10-49","50+"], minBudget:20000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon dimensionnement",
+        why:"L'ADEME soutient certains projets de production de chaleur à partir de géothermie profonde.",
+        warn:"Projet technique généralement adapté à des besoins énergétiques importants.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installations-production-chaleur-a-partir-geothermie-profonde"
+      },
+      {
+        title:"Boucle d'eau tempérée géothermique — Fonds Chaleur",
+        projects:["geo","heat","energy"], activities:["all"], employee:["1-9","10-49","50+"], minBudget:15000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon projet",
+        why:"Certaines boucles d'eau tempérées géothermiques peuvent bénéficier du Fonds Chaleur.",
+        warn:"Vérifier précisément le périmètre technique et les dépenses éligibles.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installations-production-chaleur-froid-a-partir-boucle-deau-temperee"
+      },
+      {
+        title:"Contrat Chaleur Renouvelable",
+        projects:["heat","energy","geo","solar","biomass","wasteheat"], activities:["all"], employee:["1-9","10-49","50+"], minBudget:10000,
+        level:"medium", label:"Pertinent",
+        amount:"Soutien à un ensemble de projets de chaleur renouvelable",
+        why:"Le dispositif peut accompagner plusieurs opérations de chaleur renouvelable regroupées dans un même contrat.",
+        warn:"Plus pertinent pour des portefeuilles ou programmes de projets que pour un petit achat isolé.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/contrat-chaleur-renouvelable"
+      },
+      {
+        title:"Production d'eau chaude solaire thermique — Fonds Chaleur",
+        projects:["solar","heat","energy"], activities:["commerce","restauration","services","industrie","agri","other"], employee:["0","1-9","10-49","50+"], minBudget:3000,
+        level:"high", label:"Très pertinent",
+        amount:"Aide à l'investissement — selon installation",
+        why:"L'ADEME accompagne certaines installations de production d'eau chaude par solaire thermique.",
+        warn:"Les performances, usages et études préalables conditionnent l'éligibilité.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installation-production-deau-chaude-solaire-thermique"
+      },
+      {
+        title:"Pompes à chaleur solaires pour production d'eau chaude",
+        projects:["solar","heat","energy"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:3000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon projet",
+        why:"Des installations combinant solaire et pompe à chaleur peuvent entrer dans le périmètre du Fonds Chaleur.",
+        warn:"Vérifier la technologie exacte et les seuils techniques demandés.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installation-pompes-a-chaleur-solaire-production-deau-chaude"
+      },
+      {
+        title:"Systèmes solaires combinés",
+        projects:["solar","heat","energy"], activities:["services","commerce","restauration","other"], employee:["0","1-9","10-49","50+"], minBudget:5000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon projet",
+        why:"L'ADEME prévoit un dispositif pour certains systèmes solaires combinés.",
+        warn:"Une étude de faisabilité préalable peut être requise.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/installations-systemes-solaires-combines"
+      },
+      {
+        title:"Récupération de chaleur fatale — Fonds Chaleur",
+        projects:["wasteheat","heat","energy","equipment"], activities:["industrie","agri","services","other"], employee:["1-9","10-49","50+"], minBudget:10000,
+        level:"high", label:"Très pertinent",
+        amount:"Aide à l'investissement — selon installation",
+        why:"L'ADEME peut soutenir des installations permettant de récupérer et valoriser de la chaleur fatale.",
+        warn:"Le potentiel de chaleur récupérable doit être étudié et justifié.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/realisation-dinstallations-recuperation-chaleur-fatale"
+      },
+      {
+        title:"Chaufferie biomasse bois — Fonds Chaleur",
+        projects:["biomass","heat","energy"], activities:["industrie","agri","services","other"], employee:["1-9","10-49","50+"], minBudget:10000,
+        level:"high", label:"Très pertinent",
+        amount:"Aide à l'investissement — selon projet",
+        why:"Les installations de production de chaleur à partir de biomasse peuvent être soutenues par le Fonds Chaleur.",
+        warn:"Approvisionnement, performance et dimensionnement font partie des points à vérifier.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/realisation-dinstallations-production-chaleur-biomasse-bois"
+      },
+      {
+        title:"Équipements pour l'approvisionnement des chaufferies bois",
+        projects:["biomass","equipment"], activities:["industrie","agri","transport","services","other"], employee:["1-9","10-49","50+"], minBudget:10000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon équipement",
+        why:"Certains équipements liés à l'approvisionnement de chaufferies bois peuvent bénéficier d'un soutien.",
+        warn:"Vérifier que l'équipement et le porteur correspondent exactement au dispositif.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/equipements-lapprovisionnement-chaufferies-bois-fonds-chaleur-plan-relance"
+      },
+      {
+        title:"Installation de méthanisation — Fonds Chaleur",
+        projects:["methane","heat","energy","equipment"], activities:["agri","industrie","other"], employee:["0","1-9","10-49","50+"], minBudget:20000,
+        level:"high", label:"Très pertinent",
+        amount:"Aide à l'investissement — selon installation",
+        why:"L'ADEME soutient certains projets de méthanisation, notamment pour injection, cogénération ou valorisation de chaleur.",
+        warn:"Les dossiers sont techniques et nécessitent généralement plusieurs études préalables.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/realisation-dinstallations-methanisation-injection-cogeneration-chaleur"
+      },
+      {
+        title:"Création ou extension de réseaux de chaleur et de froid",
+        projects:["heat","energy"], activities:["industrie","services","other"], employee:["10-49","50+"], minBudget:50000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide à l'investissement — selon réseau",
+        why:"Le Fonds Chaleur peut financer certains projets de création ou d'extension de réseaux de chaleur ou de froid.",
+        warn:"Dispositif plutôt destiné aux projets structurants et de taille significative.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/extension-creation-reseaux-chaleur-froid"
+      },
+      {
+        title:"Étude de faisabilité solaire thermique",
+        projects:["solar","heat","energy"], activities:["all"], employee:["0","1-9","10-49","50+"], minBudget:1000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide aux études — selon projet",
+        why:"Avant d'investir, une étude de faisabilité solaire thermique peut elle-même être éligible à une aide ADEME.",
+        warn:"La prestation d'étude doit respecter les exigences du dispositif.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/etude-faisabilite-dinstallation-solaire-thermique"
+      },
+      {
+        title:"Étude pour projet biomasse énergie",
+        projects:["biomass","heat","energy"], activities:["industrie","agri","services","other"], employee:["0","1-9","10-49","50+"], minBudget:1000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide aux études — selon projet",
+        why:"L'ADEME peut accompagner les études préalables à certains projets de chaufferie biomasse.",
+        warn:"Le cahier des charges de l'étude doit être respecté.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/etudes-projets-chaufferie-biomasse"
+      },
+      {
+        title:"Études préalables à une installation de méthanisation",
+        projects:["methane","energy"], activities:["agri","industrie","other"], employee:["0","1-9","10-49","50+"], minBudget:1000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide aux études — selon projet",
+        why:"Certaines études préalables nécessaires à un projet de méthanisation peuvent être soutenues.",
+        warn:"Vérifier les prestations et livrables éligibles avant engagement.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/etudes-prealables-a-construction-dune-installation-methanisation"
+      },
+      {
+        title:"Étude de récupération de chaleur fatale",
+        projects:["wasteheat","heat","energy"], activities:["industrie","agri","services","other"], employee:["0","1-9","10-49","50+"], minBudget:1000,
+        level:"medium", label:"Pertinent",
+        amount:"Aide aux études — selon projet",
+        why:"Une étude de faisabilité peut permettre d'évaluer le potentiel de récupération de chaleur fatale avant investissement.",
+        warn:"Le diagnostic doit répondre aux exigences techniques du dispositif.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/2026/etudes-faisabilite-linstallation-recuperation-chaleur-fatale"
+      },
+      {
+        title:"Investissements d'écoconception",
+        projects:["ecodesign","equipment","energy"], activities:["industrie","commerce","services","other"], employee:["0","1-9","10-49","50+"], minBudget:5000,
+        level:"high", label:"Très pertinent",
+        amount:"Subvention selon projet",
+        why:"L'ADEME accompagne certains investissements issus d'une démarche d'écoconception visant à réduire les impacts environnementaux d'un produit ou service.",
+        warn:"Le projet doit s'inscrire dans une véritable démarche d'écoconception et respecter les critères de l'appel.",
+        url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres/catalogue/2026/investissements-decoconception-pour-ameliorer-la-performance-environnementale"
+      }
+    ];
+
+    const rank = {high:3, medium:2, check:1};
+
+    function relevance(a, profile) {
+      let score = 0;
+      if (a.projects.includes(profile.project)) score += 5;
+      else if (profile.project === "equipment" && ["energy","heat","solar","geo","biomass","methane","wasteheat","ecodesign"].some(x => a.projects.includes(x))) score += 1;
+      else return -1;
+
+      if (a.activities.includes("all") || a.activities.includes(profile.activity)) score += 2;
+      if (a.employee.includes(profile.employees)) score += 1;
+      if (profile.budget >= a.minBudget) score += 1;
+      else score -= 1;
+      return score;
+    }
+
+    document.getElementById("radarForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const profile = {
+        activity: document.getElementById("activity").value,
+        dept: document.getElementById("dept").value.trim(),
+        employees: document.getElementById("employees").value,
+        project: document.getElementById("project").value,
+        budget: Number(document.getElementById("budget").value || 0)
+      };
+
+      let matches = aids
+        .map(a => ({...a, rel: relevance(a, profile)}))
+        .filter(a => a.rel >= 0)
+        .sort((a,b) => (b.rel - a.rel) || (rank[b.level] - rank[a.level]))
+        .slice(0,8);
+
+      const list = document.getElementById("resultList");
+
+      if (!matches.length) {
+        list.innerHTML = `<div class="empty">
+          Aucun dispositif de notre petite base de test ne correspond encore précisément à ce profil.
+          C'est normal : la V1.1 ne contient qu'une vingtaine de dispositifs. La prochaine étape sera d'automatiser l'alimentation avec une base beaucoup plus large.
+        </div>`;
+      } else {
+        list.innerHTML = matches.map(a => `
+          <article class="result">
+            <span class="badge ${a.level}">${a.label}</span>
+            <h3>${a.title}</h3>
+            <div class="meta">💶 ${a.amount}</div>
+            <div class="why"><strong>Pourquoi c'est pertinent :</strong><br>${a.why}</div>
+            <div class="warning">⚠️ ${a.warn}</div>
+            <a class="source" href="${a.url}" target="_blank" rel="noopener">Voir la source officielle ↗</a>
+          </article>
+        `).join("");
+      }
+
+      document.getElementById("results").style.display = "block";
+      document.getElementById("results").scrollIntoView({behavior:"smooth"});
+    });
+  </script>
+</body>
+</html>
