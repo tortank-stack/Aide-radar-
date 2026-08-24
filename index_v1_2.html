@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AideRadar V1.2</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#2563eb;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--mid:#175cd3;--midbg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:780px;margin:auto;padding:18px 16px 60px}.brand{font-weight:800;font-size:21px;margin:4px 0 24px}.brand b{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--p);color:white;margin-right:8px}
+h1{font-size:32px;line-height:1.08;margin:0 0 10px}.lead{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:20px}
+.card,.result{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 30px rgba(16,24,40,.04)}
+label{display:block;font-weight:700;margin:15px 0 7px}label:first-child{margin-top:0}
+input,select{width:100%;padding:14px;border:1px solid #d0d5dd;border-radius:12px;background:white;font-size:16px}
+button{width:100%;margin-top:18px;padding:15px;border:0;border-radius:13px;background:var(--p);color:white;font-size:17px;font-weight:800}
+.small{font-size:12px;color:var(--muted);line-height:1.45}.status{margin:15px 0;color:var(--muted);font-size:13px}
+#results{display:none;margin-top:22px}.result{margin-top:12px}.badge{display:inline-block;border-radius:999px;padding:6px 9px;font-size:13px;font-weight:800}.high{background:var(--goodbg);color:var(--good)}.medium{background:var(--midbg);color:var(--mid)}.check{background:var(--warnbg);color:var(--warn)}
+.result h3{font-size:20px;margin:12px 0 8px}.meta{font-size:14px;color:var(--muted);margin:5px 0}.box{background:#f9fafb;padding:12px;border-radius:12px;font-size:14px;line-height:1.5;margin-top:10px}.warn{background:var(--warnbg);color:var(--warn)}
+a{color:var(--p);font-weight:750;text-decoration:none}.source{display:inline-block;margin-top:12px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V1.2</span></div>
+<h1>Trouvez les aides adaptées à votre entreprise.</h1>
+<p class="lead">Cette version cherche dans une base officielle de plus de 2 000 dispositifs actifs, puis les classe selon votre projet, votre activité, votre effectif et votre département.</p>
+
+<section class="card">
+<form id="f">
+<label>Votre activité</label>
+<select id="activity" required>
+<option value="">Choisir…</option>
+<option value="btp">Artisan / BTP</option>
+<option value="commerce">Commerce de proximité</option>
+<option value="restauration">Hôtellerie / Restauration / Tourisme</option>
+<option value="services">Services / profession libérale</option>
+<option value="industrie">Industrie</option>
+<option value="agro">Agroalimentaire</option>
+<option value="artisan">Artisanat</option>
+<option value="all">Autre / tous secteurs</option>
+</select>
+
+<label>Département</label>
+<input id="dept" inputmode="numeric" maxlength="3" placeholder="Ex. 89" required>
+
+<label>Nombre de salariés</label>
+<select id="employees" required>
+<option value="">Choisir…</option><option value="0">0</option><option value="1-4">1 à 4</option><option value="5-9">5 à 9</option><option value="10-49">10 à 49</option><option value="50-249">50 à 249</option><option value="250+">250 ou plus</option>
+</select>
+
+<label>Votre projet</label>
+<select id="project" required>
+<option value="">Choisir…</option>
+<option value="creation">Créer / reprendre une entreprise</option>
+<option value="invest">Acheter du matériel / investir</option>
+<option value="local">Acheter / aménager un local</option>
+<option value="vehicle">Acheter un véhicule professionnel</option>
+<option value="hire">Recruter / former</option>
+<option value="digital">Numérique / logiciel / site web</option>
+<option value="energy">Énergie / transition écologique</option>
+<option value="export">Export / développement commercial</option>
+<option value="innovation">Innovation / R&D</option>
+<option value="cash">Trésorerie / financement</option>
+</select>
+
+<label>Budget du projet (€)</label>
+<input id="budget" type="number" min="0" step="100" placeholder="Ex. 25000" required>
+<button>Analyser les aides</button>
+<p class="small">Source : base open data Aides entreprises (DGE / Institut Supérieur des Métiers). Le résultat est une présélection : l’éligibilité doit être confirmée sur la source officielle.</p>
+</form>
+<div id="status" class="status">Base en attente de chargement…</div>
+</section>
+
+<section id="results"><h2>Résultats</h2><div id="list"></div></section>
+</main>
+
+<script>
+let DB=[];
+const mapActivity={
+ btp:["Artisanat - Bâtiment","Artisanat","PME tous secteurs"],
+ commerce:["Commerce de proximité","PME tous secteurs"],
+ restauration:["Hôtellerie-Restauration-Tourisme","PME tous secteurs"],
+ services:["Autres services, professions libérales","Artisanat - Services","PME tous secteurs"],
+ industrie:["Industrie","PME tous secteurs"],
+ agro:["Agro-alimentaire","PME tous secteurs"],
+ artisan:["Artisanat","Artisanat - Services","Artisanat - Fabrication","Artisanat - Alimentation","PME tous secteurs"],
+ all:["PME tous secteurs"]
+};
+const projectTerms={
+ creation:["création","reprise","lancement","capital","acre","fonds de commerce"],
+ invest:["investissement","matériel","équipement","modernisation","productif"],
+ local:["local","immobilier","site","aménager","travaux"],
+ vehicle:["véhicule","utilitaire","mobilité","transport"],
+ hire:["embauche","recrut","emploi","formation","apprenti","alternance"],
+ digital:["numérique","digital","logiciel","site internet","cyber","informatique"],
+ energy:["énergie","écologique","transition","chaleur","solaire","biomasse","géothermie","décarbon"],
+ export:["export","commercial","international","prospection","développement commercial"],
+ innovation:["innovation","r&d","recherche","brevet"],
+ cash:["trésorerie","financement","prêt","garantie","fonds propres"]
+};
+
+function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function employeeOK(raw,e){
+ if(!raw) return true;
+ const r=raw.toLowerCase();
+ if(e==="0") return r.includes("micro")||r.includes("-5")||r.includes("-10");
+ if(e==="1-4") return r.includes("-5")||r.includes("-10");
+ if(e==="5-9") return r.includes("-10");
+ if(e==="10-49") return r.includes("10-49");
+ if(e==="50-249") return r.includes("50-249");
+ if(e==="250+") return r.includes("250 et plus");
+ return true;
+}
+function scoreAid(a,p){
+ let score=0,reasons=[];
+ if(a.deps?.includes("ALL")){score+=12;reasons.push("aide nationale")}
+ else if(a.deps?.includes(p.dept)){score+=20;reasons.push(a.local?"dispositif local du département":"territoire compatible")}
+ else return -999;
+
+ const wanted=mapActivity[p.activity]||[];
+ if(a.profils?.some(x=>wanted.includes(x))){score+=20;reasons.push("activité compatible")}
+ else if(a.profils?.includes("PME tous secteurs")) score+=10;
+
+ const terms=projectTerms[p.project]||[];
+ const hay=norm([a.nom,a.objet,a.operations,(a.projets||[]).join(" ")].join(" "));
+ let hits=terms.filter(t=>hay.includes(norm(t))).length;
+ if(hits){score+=Math.min(36,18+hits*6);reasons.push("projet correspondant")}
+ else return -999;
+
+ if(employeeOK(a.effectif,p.employees)){score+=10;reasons.push("effectif compatible")}
+ else score-=12;
+
+ if(a.fin){score+=3;reasons.push("date limite connue")}
+ if(a.source)score+=4;
+ return {score,reasons};
+}
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function short(s,n=420){s=s||"";return s.length>n?s.slice(0,n)+"…":s}
+
+async function loadDB(){
+ try{
+  const r=await fetch("./aides.json",{cache:"no-store"});
+  const j=await r.json(); DB=j.aides||[];
+  document.getElementById("status").textContent=`${DB.length.toLocaleString("fr-FR")} aides actives chargées · données : ${j.updated||"date inconnue"}`;
+ }catch(e){
+  document.getElementById("status").textContent="Impossible de charger aides.json.";
+ }
+}
+loadDB();
+
+document.getElementById("f").addEventListener("submit",e=>{
+ e.preventDefault();
+ const p={activity:activity.value,dept:dept.value.trim(),employees:employees.value,project:project.value,budget:Number(budget.value||0)};
+ const rows=DB.map(a=>({a,r:scoreAid(a,p)})).filter(x=>x.r!==-999).sort((x,y)=>y.r.score-x.r.score).slice(0,12);
+ const list=document.getElementById("list");
+ if(!rows.length){list.innerHTML='<div class="result">Aucune correspondance assez fiable dans cette première version. Essaie un projet plus large ou vérifie le département.</div>'}
+ else list.innerHTML=rows.map(({a,r},i)=>{
+   let cls=i<3?"high":i<7?"medium":"check", lab=i<3?"Très pertinent":i<7?"Pertinent":"À vérifier";
+   return `<article class="result"><span class="badge ${cls}">${lab}</span><h3>${esc(a.nom)}</h3>
+   <div class="meta">📍 ${esc(a.geo|| (a.deps?.includes("ALL")?"Aide nationale":"Aide territoriale"))}${a.fin?` · ⏳ fin : ${esc(a.fin)}`:""}</div>
+   ${a.montant?`<div class="box"><strong>Montant / avantage</strong><br>${esc(short(a.montant,480))}</div>`:""}
+   ${a.objet?`<div class="box"><strong>Objet</strong><br>${esc(short(a.objet,420))}</div>`:""}
+   ${a.benef?`<div class="box"><strong>Bénéficiaires</strong><br>${esc(short(a.benef,360))}</div>`:""}
+   <div class="box"><strong>Pourquoi AideRadar l’a retenue</strong><br>${esc(r.reasons.join(" · "))}</div>
+   ${a.conditions?`<div class="box warn"><strong>À vérifier</strong><br>${esc(short(a.conditions,420))}</div>`:""}
+   ${a.source?`<a class="source" href="${esc(a.source)}" target="_blank" rel="noopener">Voir la source ↗</a>`:""}
+   </article>`;
+ }).join("");
+ results.style.display="block"; results.scrollIntoView({behavior:"smooth"});
+});
+</script>
+</body></html>
