@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AideRadar V9.1</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:780px;margin:auto;padding:18px 16px 60px}.brand{font-weight:800;font-size:21px;margin:4px 0 24px}.brand b{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--p);color:#fff;margin-right:8px}
+h1{font-size:32px;line-height:1.08;margin:0 0 10px}.lead{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:20px}
+.card,.result{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 30px rgba(16,24,40,.04)}
+label{display:block;font-weight:700;margin:15px 0 7px}label:first-child{margin-top:0}
+input,select{width:100%;padding:14px;border:1px solid #d0d5dd;border-radius:12px;background:#fff;font-size:16px}
+button{width:100%;margin-top:18px;padding:15px;border:0;border-radius:13px;background:var(--p);color:#fff;font-size:17px;font-weight:800}
+button:disabled{opacity:.55}.small,.status{font-size:13px;color:var(--muted);line-height:1.45}.status{margin-top:14px}
+#results{display:none;margin-top:22px}.result{margin-top:12px}.badge{display:inline-block;border-radius:999px;padding:6px 9px;font-size:13px;font-weight:800}.high{background:var(--goodbg);color:var(--good)}.medium{background:var(--bluebg);color:var(--blue)}.check{background:var(--warnbg);color:var(--warn)}
+.result h3{font-size:20px;margin:12px 0 8px}.meta{font-size:14px;color:var(--muted);margin:5px 0}.box{background:#f9fafb;padding:12px;border-radius:12px;font-size:14px;line-height:1.5;margin-top:10px}.warn{background:var(--warnbg);color:var(--warn)}
+a{color:var(--p);font-weight:750;text-decoration:none}.source{display:inline-block;margin-top:12px}
+.debug{font-size:12px;color:#98a2b3;margin-top:10px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V9.1</span></div>
+<h1>Trouvez les aides adaptées à votre entreprise.</h1>
+<p class="lead">Le moteur V9.1 applique les restrictions métier et bénéficiaire avant le classement, puis masque les aides probablement non éligibles.</p>
+
+<section class="card">
+<form id="radarForm">
+<label>Votre activité</label>
+<select id="activity" required>
+<option value="">Choisir…</option>
+<option value="btp">Artisan / BTP</option>
+<option value="commerce">Commerce de proximité</option>
+<option value="restauration">Hôtellerie / Restauration / Tourisme</option>
+<option value="services">Services / profession libérale</option>
+<option value="industrie">Industrie</option>
+<option value="agro">Agroalimentaire</option>
+<option value="artisan">Artisanat</option>
+<option value="all">Autre / tous secteurs</option>
+</select>
+
+<label>Décrivez précisément votre activité</label>
+<input id="activityDetail" placeholder="Ex. plomberie, menuiserie, restaurant…" required>
+
+<label>Code NAF / APE <span style="font-weight:500;color:#667085">(facultatif)</span></label>
+<input id="naf" placeholder="Ex. 43.22A">
+
+<label>Statut de l’entreprise</label>
+<select id="companyStatus" required>
+<option value="standard">Entreprise classique / aucun statut particulier</option>
+<option value="ess">ESS / ESUS</option>
+<option value="association">Association</option>
+<option value="cooperative">Coopérative</option>
+<option value="agriculture">Exploitant / entreprise agricole</option>
+<option value="liberal">Profession libérale</option>
+<option value="startup">Jeune entreprise / startup</option>
+</select>
+
+<label>Ancienneté de l’entreprise</label>
+<select id="companyAge" required>
+<option value="unknown">Je ne sais pas / non renseigné</option>
+<option value="lt1">Moins d’un an</option>
+<option value="1to3">1 à 3 ans</option>
+<option value="gt3">Plus de 3 ans</option>
+</select>
+
+<label>Département</label>
+<input id="dept" inputmode="numeric" maxlength="3" placeholder="Ex. 89" required>
+
+<label>Nombre de salariés</label>
+<select id="employees" required>
+<option value="">Choisir…</option><option value="0">0</option><option value="1-4">1 à 4</option><option value="5-9">5 à 9</option><option value="10-49">10 à 49</option><option value="50-249">50 à 249</option><option value="250+">250 ou plus</option>
+</select>
+
+<label>Votre projet</label>
+<select id="project" required>
+<option value="">Choisir…</option>
+<option value="creation">Créer / reprendre une entreprise</option>
+<option value="invest">Acheter du matériel / investir</option>
+<option value="local">Acheter / aménager un local</option>
+<option value="vehicle">Acheter un véhicule professionnel</option>
+<option value="hire">Recruter / former</option>
+<option value="digital">Numérique / logiciel / site web</option>
+<option value="energy">Énergie / transition écologique</option>
+<option value="export">Export / développement commercial</option>
+<option value="innovation">Innovation / R&D</option>
+<option value="cash">Trésorerie / financement</option>
+</select>
+
+<label>Budget du projet (€)</label>
+<input id="budget" type="number" min="0" step="100" placeholder="Ex. 25000" required>
+<button id="submitBtn" disabled>Chargement de la base…</button>
+<p class="small">Source : base open data Aides entreprises. Le moteur vérifie désormais projet, secteur, territoire, dates, effectif et conditions obligatoires avant de classer une aide.</p>
+</form>
+<div id="status" class="status">Chargement de la base officielle…</div>
+</section>
+
+<section id="results">
+<h2>Résultats</h2>
+<p class="small">Les aides sont classées par pertinence. « Probablement éligible » n’est affiché que si aucune condition obligatoire détectée ne reste inconnue.</p>
+<div id="list"></div>
+<div id="debug" class="debug"></div>
+<div style="margin-top:16px">
+  <button id="exportBtn" type="button" style="display:none">📤 Exporter le diagnostic</button>
+  <p id="exportInfo" class="small" style="display:none">Le fichier contient votre profil, les résultats affichés, les critères d’éligibilité et les calculs effectués par AideRadar.</p>
+</div>
+</section>
+</main>
+
+<script>
+let DB=[];
+
+const PROJECT_TERMS={
+ creation:["création","reprise","créateur","repreneur","créer","reprendre","installation"],
+ invest:["investissement","matériel","équipement","machine","outillage","modernisation","productif"],
+ local:["local","immobilier","aménagement","travaux","atelier","commerce"],
+ vehicle:["véhicule","utilitaire","mobilité","transport","flotte"],
+ hire:["embauche","recrutement","emploi","formation","apprenti","alternance"],
+ digital:["numérique","digital","logiciel","site internet","cyber","informatique"],
+ energy:["énergie","transition écologique","chaleur","solaire","biomasse","géothermie","décarbonation"],
+ export:["export","international","prospection","développement commercial"],
+ innovation:["innovation","r&d","recherche","brevet"],
+ cash:["trésorerie","financement","prêt","garantie","fonds propres"]
+};
+
+const PROFILE_TERMS={
+ btp:["artisanat - bâtiment","artisanat","pme tous secteurs"],
+ commerce:["commerce de proximité","pme tous secteurs"],
+ restauration:["hôtellerie-restauration-tourisme","pme tous secteurs"],
+ services:["autres services, professions libérales","artisanat - services","pme tous secteurs"],
+ industrie:["industrie","pme tous secteurs"],
+ agro:["agro-alimentaire","pme tous secteurs"],
+ artisan:["artisanat","artisanat - services","artisanat - fabrication","artisanat - alimentation","pme tous secteurs"],
+ all:["pme tous secteurs"]
+};
+
+function norm(s){
+ return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’']/g,"'").replace(/\s+/g," ").trim();
+}
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function clean(s){return (s||"").replace(/%mini%/gi,"").replace(/\s{2,}/g," ").trim()}
+function short(s,n=430){s=clean(s);return s.length>n?s.slice(0,n)+"…":s}
+
+function employeeCompatible(raw,e){
+ const r=norm(raw);
+ if(!r) return true;
+ if(e==="0") return r.includes("-5")||r.includes("-10")||r.includes("micro")||r.includes("tous");
+ if(e==="1-4") return r.includes("-5")||r.includes("-10")||r.includes("moins de 10")||r.includes("tous");
+ if(e==="5-9") return r.includes("-10")||r.includes("moins de 10")||r.includes("tous");
+ if(e==="10-49") return r.includes("10-49")||r.includes("moins de 50")||r.includes("tous");
+ if(e==="50-249") return r.includes("50-249")||r.includes("moins de 250")||r.includes("tous");
+ if(e==="250+") return r.includes("250 et plus")||r.includes("grande entreprise")||r.includes("tous");
+ return true;
+}
+
+
+function specialisedMismatch(a, detail, naf){
+ const focused=norm([a.nom,a.benef,a.objet].join(" "));
+ const user=norm(detail+" "+naf);
+ const groups=[
+  {aid:["scierie","premiere transformation du bois","sylviculture","exploitation forestiere"],user:["bois","scierie","menuiser","charpent","forest"]},
+  {aid:["viticulture","viticole","elevage","exploitant agricole","entreprise agricole"],user:["agric","ferme","elevage","viticul","vin"]},
+  {aid:["hotellerie","hotelier","camping","hebergement touristique"],user:["hotel","restaurant","tourisme","camping","hebergement"]},
+  {aid:["librairie","libraire","edition de livres","editeur"],user:["librair","edition","editeur"]},
+  {aid:["coiffure","esthetique","institut de beaute"],user:["coiff","estheti","beaute"]},
+  {aid:["peche maritime","aquaculture","armateur"],user:["peche","aquaculture","maritime"]},
+  {aid:["cinema","audiovisuel","production cinematographique"],user:["cinema","audiovisuel","video","film"]},
+  {aid:["pharmacie","pharmacien"],user:["pharma"]},
+  {aid:["boulangerie","boulanger","patisserie","patissier"],user:["boulanger","patisserie","patissier"]}
+ ];
+ for(const g of groups){
+  if(g.aid.some(t=>focused.includes(norm(t))) && !g.user.some(t=>user.includes(norm(t)))) return true;
+ }
+ return false;
+}
+
+
+function euroNumber(raw){
+  if(!raw) return null;
+  const n = Number(raw.replace(/[^\d]/g,""));
+  return Number.isFinite(n) && n>0 ? n : null;
+}
+
+
+
+
+function extractCaps(text){
+  const t=clean(text||"");
+  const found=[];
+  const rx=/((?:plafonn(?:e|ee|é|ée)?|plafond|dans la limite de|maximum de).{0,55}?)([\d\s\u00a0]+)\s*€(?:\s*(par jour|par an|annuel|sur \d+ ans?|sur \d+ mois?))?/gi;
+  let m;
+  while((m=rx.exec(t))!==null){
+    const n=euroNumber(m[2]);
+    if(!n) continue;
+    found.push({amount:n,unit:(m[3]||"").toLowerCase(),context:m[1]});
+  }
+  return found;
+}
+
+function parseFinanceRange(raw){
+  const t=clean(raw||"");
+  const patterns=[
+    /compris(?:e)?\s+entre\s*([\d\s]+)\s*(?:€|euros?)?\s*et\s*([\d\s]+)\s*(?:€|euros?)/i,
+    /(?:montant[^.\n:]{0,35}:?\s*)?(?:de\s*)?([\d\s]+)\s*€\s*(?:a|à|-)\s*([\d\s]+)\s*€/i,
+    /(?:de\s*)?([\d\s]+)\s*€\s*jusqu['’]?(?:a|à)\s*([\d\s]+)\s*€/i
+  ];
+  for(const rx of patterns){
+    const m=t.match(rx);
+    if(m){
+      const min=euroNumber(m[1]), max=euroNumber(m[2]);
+      if(min && max && max>=min) return {min,max};
+    }
+  }
+  const maxOnly=t.match(/(?:jusqu['’]?(?:a|à)|maximum(?: de)?|plafonn(?:e|é|ée) à)\s*([\d\s]+)\s*€/i);
+  if(maxOnly){
+    const max=euroNumber(maxOnly[1]);
+    if(max) return {min:null,max};
+  }
+  return null;
+}
+
+function estimateAidAmount(a,budget){
+  if(!budget || budget<=0) return null;
+
+  const raw=clean([a.montant,a.conditions,a.objet].join(" "));
+  const t=norm(raw);
+  const isLoan=/\b(avance remboursable|pret|prêt|microcredit|microcrédit|credit-bail|crédit-bail)\b/.test(t);
+  const isGuarantee=/\bgarantie\b/.test(t) && !/\bsubvention\b/.test(t);
+
+  // Un financement n'est jamais estimé comme "% du budget projet".
+  if(isLoan || isGuarantee){
+    const range=parseFinanceRange(a.montant||"");
+    if(range){
+      return {
+        ambiguous:false,
+        type:"financement",
+        financeRange:true,
+        minAmount:range.min,
+        maxAmount:range.max,
+        reason:"Fourchette de financement indiquée dans la fiche"
+      };
+    }
+    return {
+      ambiguous:true,
+      type:"financement",
+      reason:isGuarantee
+        ? "Garantie : le pourcentage porte sur un financement bancaire, pas sur le budget du projet"
+        : "Montant du financement à déterminer selon le dossier"
+    };
+  }
+
+  // Si le pourcentage porte sur une assiette autre que les dépenses du projet,
+  // on n'applique jamais ce taux au budget saisi.
+  const specificBase =
+    /\b(montant|cout|coût).{0,35}\b(adhesion|adhésion|prestation|diagnostic|audit|salaire|cout salarial|coût salarial|loyer|cotisation|accompagnement)\b/.test(t) ||
+    /\bde l['’](adhesion|adhésion)\b/.test(t);
+  if(specificBase){
+    return {
+      ambiguous:true,
+      type:"aide",
+      reason:"Le taux s'applique à une dépense spécifique, pas au budget global du projet"
+    };
+  }
+
+  const complexFormula =
+    /\b(en fonction du projet|besoin en tresorerie|besoin en trésorerie|additionnant|selon la taille|modulable|bonus regional|bonus régionaux|par jour|sur \d+ ans|sur \d+ mois|selon le projet|selon conditions)\b/.test(t);
+
+  let rates=[];
+  const targetedPatterns=[
+    /subvention.{0,90}?(\d{1,2}(?:[.,]\d+)?)\s*%/gi,
+    /aide.{0,90}?(\d{1,2}(?:[.,]\d+)?)\s*%/gi,
+    /representant.{0,70}?(\d{1,2}(?:[.,]\d+)?)\s*%/gi,
+    /représentant.{0,70}?(\d{1,2}(?:[.,]\d+)?)\s*%/gi,
+    /prise en charge.{0,60}?(\d{1,2}(?:[.,]\d+)?)\s*%/gi
+  ];
+  for(const rx of targetedPatterns){
+    let m;
+    while((m=rx.exec(raw))!==null){
+      const n=Number(m[1].replace(",","."));
+      if(n>0 && n<=100) rates.push(n);
+    }
+  }
+  rates=Array.from(new Set(rates)).sort((a,b)=>a-b);
+
+  const caps=extractCaps(raw);
+  const globalCaps=caps.filter(c=>!c.unit);
+  const timeCaps=caps.filter(c=>c.unit);
+
+  if(complexFormula || rates.length===0 || rates.length>1 || timeCaps.length>0 || globalCaps.length>1){
+    return {
+      ambiguous:true,
+      type:"aide",
+      reason:timeCaps.length
+        ? "Plafond dépendant du temps / de la prestation"
+        : (rates.length>1 ? "Plusieurs taux ou barèmes possibles" : "Plusieurs règles ou barèmes possibles")
+    };
+  }
+
+  const rate=rates[0];
+  let amount=budget*(rate/100);
+  let cap=null;
+  if(globalCaps.length===1){
+    cap=globalCaps[0].amount;
+    amount=Math.min(amount,cap);
+  }
+
+  return {
+    ambiguous:false,
+    type:"aide",
+    minRate:rate,maxRate:rate,
+    minAmount:amount,maxAmount:amount,cap,
+    conditional:false
+  };
+}
+
+function euro(n){
+  return Math.round(n).toLocaleString("fr-FR")+" €";
+}
+
+function moneyValue(raw,unit){
+  let n=Number(String(raw).replace(/\s/g,"").replace(",","."));
+  const u=norm(unit||"");
+  if(/\b(k|keur|k€)\b/.test(u)) n*=1000;
+  if(/\b(m|meur|million)\b/.test(u)) n*=1000000;
+  return n;
+}
+
+function extractMinimumBudget(a){
+  const t=clean([a.montant,a.conditions,a.objet].join(" "));
+  const patterns=[
+    /(?:assiette|depenses?|dépenses?|investissement|programme|projet).{0,45}?(?:superieur(?:e)? a|supérieur(?:e)? à|au moins|minimum de|minimum|a partir de|à partir de)\s*([\d\s.,]+)\s*(k\s*€|k€|keur|m\s*€|m€|million(?:s)?\s*d['’]?euros?|€)/gi,
+    /(?:seuil|plancher).{0,30}?([\d\s.,]+)\s*(k\s*€|k€|keur|m\s*€|m€|million(?:s)?\s*d['’]?euros?|€)/gi
+  ];
+  const vals=[];
+  for(const rx of patterns){
+    let m;
+    while((m=rx.exec(t))!==null){
+      const n=moneyValue(m[1],m[2]);
+      if(n>0) vals.push(n);
+    }
+  }
+  const filtered=vals.filter(v=>v>=500);
+  return filtered.length?Math.max.apply(null,filtered):null;
+}
+
+
+
+function beneficiaryGate(a,p){
+  const name = norm(a.nom);
+  const benef = norm(a.benef);
+  const cond = norm(a.conditions);
+  const obj = norm(a.objet);
+  const txt = [name,benef,cond,obj].join(" ");
+  const notes=[];
+
+  const explicitESUS =
+    /\b(esus|entreprise solidaire d'utilite sociale)\b/.test(benef+" "+cond) ||
+    /\bentreprises? de l'ess\b/.test(name+" "+benef);
+  if(explicitESUS && p.companyStatus!=="ess")
+    return {exclude:true,reason:"réservée aux structures ESS/ESUS"};
+
+  const explicitAssociation =
+    /\bbeneficiaires?\s*:?\s*associations?\b/.test(benef) ||
+    (/^associations?\b/.test(benef) && !/\bentreprise|pme|tpe\b/.test(benef));
+  if(explicitAssociation && p.companyStatus!=="association")
+    return {exclude:true,reason:"réservée aux associations"};
+
+  const explicitCoop =
+    /\b(scop|scic|societe cooperative|cooperative exclusivement)\b/.test(benef+" "+cond);
+  if(explicitCoop && p.companyStatus!=="cooperative")
+    return {exclude:true,reason:"réservée aux coopératives"};
+
+  const explicitAgriculture =
+    /\b(exploitants? agricoles?|entreprises? agricoles?|agriculteurs?|viticulteurs?|eleveurs?)\b/.test(benef) &&
+    !/\b(pme tous secteurs|toutes entreprises|tous secteurs)\b/.test(benef);
+  if(explicitAgriculture && p.companyStatus!=="agriculture")
+    return {exclude:true,reason:"réservée au secteur agricole"};
+
+  const explicitLiberal =
+    /\bprofessions? liberales?\b/.test(benef) &&
+    !/\b(pme tous secteurs|toutes entreprises|tous secteurs)\b/.test(benef);
+  if(explicitLiberal && p.companyStatus!=="liberal")
+    return {exclude:true,reason:"réservée aux professions libérales"};
+
+  const ageText = benef + " " + cond;
+  const companyAgeRules = [
+    {
+      rx:/\b(entreprise|societe|structure).{0,50}(cree|creee|creees|creation|immatriculee|immatriculation).{0,40}(moins de 12 mois|moins d'un an|moins de 1 an)\b/,
+      allowed:["lt1"], reason:"réservée aux entreprises de moins d’un an"
+    },
+    {
+      rx:/\b(entreprise|societe|structure).{0,50}(cree|creee|creees|creation|immatriculee|immatriculation).{0,40}(moins de 3 ans|moins de trois ans|moins de 36 mois)\b/,
+      allowed:["lt1","1to3"], reason:"réservée aux entreprises de moins de 3 ans"
+    },
+    {
+      rx:/\b(entreprise|societe|structure).{0,50}(exister|existence|immatriculee|immatriculation|activite).{0,40}(au moins 3 ans|plus de 3 ans|depuis 3 ans)\b/,
+      allowed:["gt3"], reason:"ancienneté minimale de 3 ans"
+    }
+  ];
+
+  for(const rule of companyAgeRules){
+    if(rule.rx.test(ageText)){
+      if(p.companyAge==="unknown") notes.push(rule.reason);
+      else if(!rule.allowed.includes(p.companyAge)) return {exclude:true,reason:rule.reason};
+    }
+  }
+
+  return {exclude:false,notes};
+}
+
+
+const MONTHS_FR={
+  janvier:1,fevrier:2,février:2,mars:3,avril:4,mai:5,juin:6,
+  juillet:7,aout:8,août:8,septembre:9,octobre:10,novembre:11,decembre:12,décembre:12
+};
+
+function parseFrenchDate(day,month,year){
+  const m=MONTHS_FR[norm(month)];
+  if(!m) return null;
+  return new Date(Number(year),m-1,Number(day),23,59,59);
+}
+
+function temporalGate(a,p){
+  const now=new Date();
+  if(a.fin){
+    const d=new Date(a.fin+"T23:59:59");
+    if(!Number.isNaN(d.getTime()) && d<now) return {exclude:true,reason:"dispositif arrivé à échéance"};
+  }
+
+  const raw=clean([a.benef,a.objet,a.conditions].join(" "));
+  const t=norm(raw);
+
+  // Une création/reprise doit elle-même se situer avant une date désormais dépassée.
+  if(p.project==="creation"){
+    const rx=/(?:creation|création|extension|reprise).{0,90}?(?:jusqu['’]?(?:au|a|à)|entre.{0,50}?et)\s*(\d{1,2})\s+(janvier|fevrier|février|mars|avril|mai|juin|juillet|aout|août|septembre|octobre|novembre|decembre|décembre)\s+(\d{4})/gi;
+    let m;
+    while((m=rx.exec(raw))!==null){
+      const d=parseFrenchDate(m[1],m[2],m[3]);
+      if(d && d<now) return {exclude:true,reason:"fenêtre de création/reprise expirée"};
+    }
+  }
+
+  // "mobilisable jusqu'au..." ou "dispositif jusqu'au..."
+  const until=raw.match(/(?:mobilisable|dispositif|appel|aide).{0,50}?jusqu['’]?(?:au|a|à)\s*(\d{1,2})\s+(janvier|fevrier|février|mars|avril|mai|juin|juillet|aout|août|septembre|octobre|novembre|decembre|décembre)\s+(\d{4})/i);
+  if(until){
+    const d=parseFrenchDate(until[1],until[2],until[3]);
+    if(d && d<now) return {exclude:true,reason:"dispositif arrivé à échéance"};
+  }
+
+  return {exclude:false};
+}
+
+function sectorListGate(a,p){
+  const benef=norm(a.benef);
+  if(!/\bsecteurs? suivants?\b/.test(benef)) return {exclude:false};
+  if(/\b(tous secteurs|tous secteurs d'activite|tous secteurs d'activité)\b/.test(benef)) return {exclude:false};
+
+  const user=norm([p.activity,p.activityDetail,p.naf].join(" "));
+  const vocab={
+    btp:["btp","batiment","construction","travaux publics","plomb","chauffage","electric","macon","artisan"],
+    commerce:["commerce","commerc","boutique","boulanger","patis","alimentaire","detail"],
+    restauration:["restauration","restaurant","hotel","hotellerie","tourisme","traiteur"],
+    services:["services","service","conseil","liberal","informatique","numerique","digital"],
+    industrie:["industrie","industriel","production","transformation","fabrication","manufactur","machine"],
+    agro:["agro","alimentaire","agroalimentaire","transformation alimentaire"],
+    artisan:["artisan","metiers","fabrication","boulanger","patis","coiff","plomb"]
+  };
+  const terms=vocab[p.activity]||[];
+  if(terms.some(x=>benef.includes(norm(x))) || terms.some(x=>user.includes(norm(x)) && benef.includes(norm(x)))) return {exclude:false};
+
+  // Si la liste est explicite et qu'aucun secteur utilisateur n'y figure, exclusion.
+  return {exclude:true,reason:"secteur d’activité absent de la liste des bénéficiaires"};
+}
+
+function projectIntentGate(a,p){
+  const title=norm(a.nom), obj=norm(a.objet), benef=norm(a.benef);
+  const focused=[title,obj,benef].join(" ");
+
+  if(p.project==="creation"){
+    const creation=/\b(creation|création|reprise|createur|créateur|repreneur|premiere installation|première installation|installation d'entreprise)\b/.test(focused);
+    if(!creation) return {exclude:true,reason:"la fiche ne vise pas un projet de création/reprise"};
+  }
+
+  if(p.project==="digital"){
+    const digital=/\b(numerique|numérique|digital|digitalisation|logiciel|site internet|cyber|informatique)\b/.test(focused);
+    if(!digital) return {exclude:true,reason:"la fiche ne vise pas un projet numérique"};
+  }
+
+  if(p.project==="energy"){
+    const energy=/\b(energie|énergie|transition ecologique|transition écologique|decarbon|décarbon|chaleur|solaire|biomasse|geothermie|géothermie|environnement|biodiversite|biodiversité)\b/.test(focused);
+    if(!energy) return {exclude:true,reason:"la fiche ne vise pas un projet énergie/environnement"};
+  }
+
+  return {exclude:false};
+}
+
+function scoreAid(a,p){
+ let score=0,reasons=[],penalties=[];
+
+ // 0. Restrictions obligatoires du bénéficiaire
+ const gate=beneficiaryGate(a,p);
+ if(gate.exclude) return null;
+ if(Array.isArray(gate && gate.notes) && gate.notes.length) penalties.push.apply(penalties, gate.notes);
+
+ const restricted=restrictedProfileGate(a,p);
+ if(restricted.exclude) return null;
+
+ const availabilityTxt=norm([a.objet,a.conditions,a.montant].join(" "));
+ if(/(credits? disponibles?.{0,80}(consomme|consommé|epuise|épuisé)|dispositif.{0,30}(clos|ferme|fermé)|appel.{0,20}clos)/.test(availabilityTxt)) return null;
+
+ const specialized=specializedProjectGate(a,p);
+ if(specialized.exclude) return null;
+
+ const employeeGate=explicitEmployeeGate(a,p);
+ if(employeeGate.exclude) return null;
+
+ const timeGate=temporalGate(a,p);
+ if(timeGate.exclude) return null;
+
+ const sectorList=sectorListGate(a,p);
+ if(sectorList.exclude) return null;
+
+ const intentGate=projectIntentGate(a,p);
+ if(intentGate.exclude) return null;
+
+ // 1. Territoire
+ if((a.deps||[]).includes("ALL")){score+=18;reasons.push("aide nationale")}
+ else if((a.deps||[]).includes(p.dept)){score+=28;reasons.push("département compatible")}
+ else return null;
+
+ // 2. Projet
+ const projectHay=norm([a.nom,a.objet,a.operations,(a.projets||[]).join(" ")].join(" "));
+ const hits=(PROJECT_TERMS[p.project]||[]).filter(t=>projectHay.includes(norm(t)));
+ if(!hits.length) return null;
+ score+=Math.min(40,22+hits.length*5);
+ reasons.push("projet correspondant");
+
+ // 3. Budget minimum explicite : si le projet est sous le plancher, on écarte l'aide
+ const minBudget = extractMinimumBudget(a);
+ if(minBudget && p.budget>0 && p.budget < minBudget) return null;
+ if(minBudget && p.budget>=minBudget){
+   score += 12;
+   reasons.push("budget supérieur au seuil minimum");
+ }
+
+ // 4. Secteur général
+ const profs=(a.profils||[]).map(norm);
+ const expected=(PROFILE_TERMS[p.activity]||[]).map(norm);
+ if(profs.some(x=>expected.includes(x))){score+=14;reasons.push("secteur compatible")}
+ else if(profs.includes("pme tous secteurs")){score+=10;reasons.push("ouvert aux PME tous secteurs")}
+
+ // 5. Activité précise
+ const words=norm(p.activityDetail).split(/\s+/).filter(w=>w.length>=4);
+ const allHay=norm([a.nom,a.objet,a.benef,a.conditions,(a.profils||[]).join(" ")].join(" "));
+ const detailHits=words.filter(w=>allHay.includes(w));
+ if(detailHits.length){score+=Math.min(22,8+detailHits.length*7);reasons.push("activité précise retrouvée")}
+
+ // 6. NAF
+ if(p.naf){
+   const naf=norm(p.naf).replace(/\./g,"");
+   const nafHay=allHay.replace(/\./g,"");
+   if(nafHay.includes(naf)){score+=24;reasons.push("code NAF/APE retrouvé")}
+ }
+
+ // 7. Effectif
+ if(employeeCompatible(a.effectif,p.employees)){score+=10;reasons.push("effectif compatible")}
+ else score-=8;
+
+ // 8. Eviter les faux positifs ultra-sectoriels
+ if(specialisedMismatch(a,p.activityDetail,p.naf)) return null;
+
+ const mandatoryTxt=norm((a.conditions||"")+" "+(a.benef||""));
+ const mandatoryNotes=[];
+ if(/\b(duerp|document unique d'evaluation des risques)\b/.test(mandatoryTxt)) mandatoryNotes.push("DUERP / prévention à vérifier");
+ if(/\b(rge|reconnu garant de l'environnement)\b/.test(mandatoryTxt)) mandatoryNotes.push("qualification RGE à vérifier");
+ if(/\b(cotisations?.{0,20}urssaf|a jour de ses cotisations)\b/.test(mandatoryTxt)) mandatoryNotes.push("situation sociale à jour à vérifier");
+ if(/\b(obligations? fiscales?|a jour de ses obligations fiscales)\b/.test(mandatoryTxt)) mandatoryNotes.push("situation fiscale à jour à vérifier");
+ if(/\b(registre national des entreprises|rne)\b/.test(mandatoryTxt)) mandatoryNotes.push("immatriculation RNE à vérifier");
+ if(Array.isArray(mandatoryNotes) && mandatoryNotes.length) penalties.push.apply(penalties, mandatoryNotes);
+
+ if(a.source) score+=3;
+ if(a.fin) score+=2;
+
+ return {score,reasons,penalties};
+}
+
+
+function detectEligibilityChecks(a,p){
+  const txt=norm([a.benef,a.conditions,a.objet].join(" "));
+  const checks=[];
+
+  function add(label, state, detail){
+    checks.push({label,state,detail});
+  }
+
+  // Confirmed by the form itself
+  add("Territoire","ok","Département / couverture compatible");
+  add("Projet","ok","Projet correspondant à la fiche");
+  add("Effectif","ok","Effectif compatible selon les données disponibles");
+
+  if(p.naf){
+    const naf=norm(p.naf).replace(/\./g,"");
+    const hay=txt.replace(/\./g,"");
+    if(hay.includes(naf)) add("Code NAF / APE","ok","Code retrouvé dans la fiche");
+    else add("Code NAF / APE","check","Code non retrouvé explicitement dans la fiche");
+  }
+
+  // Conditions fréquentes que le formulaire ne peut pas certifier
+  const rules=[
+    {rx:/\b(entreprises? en difficulte|entreprises? en difficulté|plan de redressement|consolidation financiere|consolidation financière)\b/, projects:["cash"], reason:"situation de trésorerie/difficulté spécifique requise"},
+    {rx:/\b(projet de croissance|croissance de l'entreprise|croissance des tpe)\b/, projects:["invest","cash"], reason:"projet de croissance d’une entreprise existante requis"},
+    {rx:/\b(duerp|document unique d'evaluation des risques)\b/,label:"DUERP",detail:"Document unique à jour à confirmer"},
+    {rx:/\b(cotisations?.{0,25}urssaf|a jour de ses cotisations|situation sociale)\b/,label:"Situation sociale",detail:"Cotisations / situation URSSAF à confirmer"},
+    {rx:/\b(obligations? fiscales?|situation fiscale|a jour de ses obligations fiscales)\b/,label:"Situation fiscale",detail:"Situation fiscale à confirmer"},
+    {rx:/\b(rge|reconnu garant de l'environnement)\b/,label:"Qualification RGE",detail:"Qualification requise à confirmer"},
+    {rx:/\b(rne|registre national des entreprises)\b/,label:"Immatriculation RNE",detail:"Immatriculation requise à confirmer"},
+    {rx:/\b(non[- ]cumul|ne pas avoir beneficie|cumul des aides)\b/,label:"Règles de cumul",detail:"Vérifier les aides déjà perçues"},
+    {rx:/\b(diagnostic|audit|etude prealable|étude préalable)\b/,label:"Étude / diagnostic",detail:"Une étude préalable peut être exigée"},
+    {rx:/\b(devis|bon de commande|avant engagement|avant signature)\b/,label:"Calendrier de la dépense",detail:"Ne pas engager la dépense avant vérification"},
+  ];
+  for(const r of rules){
+    if(r.rx.test(txt) && !checks.some(x=>x.label===r.label)) add(r.label,"check",r.detail);
+  }
+
+ 
+ const financeTxt=norm([a.nom,a.montant].join(" "));
+ const rangeMatch=clean(a.montant||"").match(/(?:montant[^.\n:]{0,35}:?\s*)?(?:de\s*)?([\d\s]+)\s*€\s*(?:(?:a|à|-)\s*|jusqu['’]?a\s*|jusqu['’]?à\s*)([\d\s]+)\s*€/i);
+ if(/\b(pret|prêt|credit-bail|crédit-bail|avance remboursable)\b/.test(financeTxt) && rangeMatch){
+   const financeMin=euroNumber(rangeMatch[1]);
+   if(financeMin>=500 && p.budget<financeMin) return null;
+ }
+
+ const minBudget=extractMinimumBudget(a);
+  if(minBudget){
+    if(p.budget>=minBudget) add("Budget minimum","ok",`Budget ≥ ${euro(minBudget)}`);
+    else add("Budget minimum","fail",`Budget inférieur à ${euro(minBudget)}`);
+  }
+
+  return checks;
+}
+
+
+
+function profileContext(p){
+  return norm([
+    p.activity,
+    p.activityDetail,
+    p.companyStatus,
+    p.naf
+  ].join(" "));
+}
+
+
+
+const DEPARTMENT_NAMES={"01": ["ain"], "02": ["aisne"], "03": ["allier"], "04": ["alpes de haute provence"], "05": ["hautes alpes"], "06": ["alpes maritimes"], "07": ["ardeche"], "08": ["ardennes"], "09": ["ariege"], "10": ["aube"], "11": ["aude"], "12": ["aveyron"], "13": ["bouches du rhone"], "14": ["calvados"], "15": ["cantal"], "16": ["charente"], "17": ["charente maritime"], "18": ["cher"], "19": ["correze"], "2A": ["corse du sud"], "2B": ["haute corse"], "21": ["cote d'or"], "22": ["cotes d'armor"], "23": ["creuse"], "24": ["dordogne"], "25": ["doubs"], "26": ["drome"], "27": ["eure"], "28": ["eure et loir"], "29": ["finistere"], "30": ["gard"], "31": ["haute garonne"], "32": ["gers"], "33": ["gironde"], "34": ["herault"], "35": ["ille et vilaine"], "36": ["indre"], "37": ["indre et loire"], "38": ["isere"], "39": ["jura"], "40": ["landes"], "41": ["loir et cher"], "42": ["loire"], "43": ["haute loire"], "44": ["loire atlantique"], "45": ["loiret"], "46": ["lot"], "47": ["lot et garonne"], "48": ["lozere"], "49": ["maine et loire"], "50": ["manche"], "51": ["marne"], "52": ["haute marne"], "53": ["mayenne"], "54": ["meurthe et moselle"], "55": ["meuse"], "56": ["morbihan"], "57": ["moselle"], "58": ["nievre"], "59": ["nord"], "60": ["oise"], "61": ["orne"], "62": ["pas de calais"], "63": ["puy de dome"], "64": ["pyrenees atlantiques"], "65": ["hautes pyrenees"], "66": ["pyrenees orientales"], "67": ["bas rhin"], "68": ["haut rhin"], "69": ["rhone"], "70": ["haute saone"], "71": ["saone et loire"], "72": ["sarthe"], "73": ["savoie"], "74": ["haute savoie"], "75": ["paris"], "76": ["seine maritime"], "77": ["seine et marne"], "78": ["yvelines"], "79": ["deux sevres"], "80": ["somme"], "81": ["tarn"], "82": ["tarn et garonne"], "83": ["var"], "84": ["vaucluse"], "85": ["vendee"], "86": ["vienne"], "87": ["haute vienne"], "88": ["vosges"], "89": ["yonne"], "90": ["territoire de belfort"], "91": ["essonne"], "92": ["hauts de seine"], "93": ["seine saint denis"], "94": ["val de marne"], "95": ["val d'oise"], "971": ["guadeloupe"], "972": ["martinique"], "973": ["guyane"], "974": ["reunion"], "976": ["mayotte"]};
+
+function preciseLocalityGate(a,p){
+  const title=norm(a.nom);
+  const benef=norm(a.benef);
+  const obj=norm(a.objet);
+  const cond=norm(a.conditions);
+  const focused=[title,benef,obj,cond].join(" ");
+
+  // Réseaux / dispositifs locaux très explicites.
+  const localNames=[
+    {rx:/\binitiative vendee\b/,deps:["85"],reason:"dispositif localisé en Vendée"},
+    {rx:/\binitiative 89\b/,deps:["89"],reason:"dispositif localisé dans l’Yonne"},
+    {rx:/\bcommunaute de communes de la vanne et du pays d'othe\b/,deps:["89"],reason:"dispositif limité à la Communauté de communes de la Vanne et du Pays d’Othe"}
+  ];
+  for(const r of localNames){
+    if(r.rx.test(focused) && !r.deps.includes(p.dept)) return {exclude:true,reason:r.reason};
+  }
+
+  // Restrictions formulées explicitement par département.
+  // Exemple : "départements des Ardennes et de l'Ariège".
+  const hasDeptContext=/\b(departement|departements|département|départements)\b/.test(focused);
+  if(hasDeptContext){
+    const named=[];
+    for(const [dep,names] of Object.entries(DEPARTMENT_NAMES)){
+      if(names.some(n=>focused.includes(norm(n)))) named.push(dep);
+    }
+    if(named.length && !named.includes(p.dept)){
+      return {exclude:true,reason:"dispositif réservé à d’autres départements"};
+    }
+  }
+
+  // Zones très fines : le département seul ne permet pas de confirmer.
+  return {exclude:false};
+}
+
+function employeeRange(p){
+  const map={
+    "0":[0,0],
+    "1-4":[1,4],
+    "5-9":[5,9],
+    "10-49":[10,49],
+    "50-249":[50,249],
+    "250+":[250,100000]
+  };
+  return map[p.employees]||[0,100000];
+}
+
+function explicitEmployeeGate(a,p){
+  const txt=norm([a.benef,a.conditions].join(" "));
+  const [umin,umax]=employeeRange(p);
+
+  const mins=[];
+  const maxs=[];
+
+  const minPatterns=[
+    /(?:plus de|au moins|minimum de)\s*(\d+)\s*(?:salaries|salariés|collaborateurs|personnes|etp)/g,
+    /effectif.{0,25}(?:superieur a|supérieur à|au moins)\s*(\d+)/g
+  ];
+  const maxPatterns=[
+    /(?:moins de|inferieur a|inférieur à|maximum de|au maximum)\s*(\d+)\s*(?:salaries|salariés|collaborateurs|personnes|etp)/g,
+    /effectif.{0,25}(?:inferieur ou egal a|inférieur ou égal à|maximum)\s*(\d+)/g
+  ];
+
+  for(const rx of minPatterns){
+    let m; while((m=rx.exec(txt))!==null) mins.push(Number(m[1]));
+  }
+  for(const rx of maxPatterns){
+    let m; while((m=rx.exec(txt))!==null) maxs.push(Number(m[1]));
+  }
+
+  const minReq=mins.length?Math.max.apply(null,mins):null;
+  const maxReq=maxs.length?Math.min.apply(null,maxs):null;
+
+  // Exclude only when the whole selected employee range is incompatible.
+  if(minReq!==null && umax < minReq) return {exclude:true,reason:`au moins ${minReq} salariés/collaborateurs requis`};
+  if(maxReq!==null && umin > maxReq) return {exclude:true,reason:`effectif maximum ${maxReq}`};
+
+  return {exclude:false};
+}
+
+function specializedProjectGate(a,p){
+  const title=norm(a.nom), obj=norm(a.objet), cond=norm(a.conditions);
+  const focused=[title,obj,cond].join(" ");
+
+  const rules=[
+    {rx:/\b(projets? d'innovation|recherche.{0,15}developpement|r&d|innovation technologique)\b/, projects:["innovation"], reason:"projet d’innovation/R&D requis"},
+    {rx:/\b(itineraires? touristiques?|tourisme durable|valorisation touristique|patrimoine.{0,20}touris)\b/, projects:["tourism"], reason:"projet touristique/patrimonial requis"},
+    {rx:/\b(recrutement de cadres?|assistant\(e\)? export|cout salarial|coût salarial)\b/, projects:["recruit"], reason:"projet de recrutement requis"},
+    {rx:/\b(immobilier d'entreprise|acquisition immobiliere|construction de locaux|extension de locaux)\b/, projects:["realestate"], reason:"projet immobilier requis"}
+  ];
+  for(const r of rules){
+    if(r.rx.test(focused) && !r.projects.includes(p.project))
+      return {exclude:true,reason:r.reason};
+  }
+  return {exclude:false};
+}
+
+function restrictedProfileGate(a,p){
+  const locality=preciseLocalityGate(a,p);
+  if(locality.exclude) return locality;
+
+  const title=norm(a.nom);
+  const benef=norm(a.benef);
+  const obj=norm(a.objet);
+  const cond=norm(a.conditions);
+  const hay=[title,benef,obj,cond].join(" ");
+  const user=profileContext(p);
+
+  // Profil personnel / situation spécifique
+  const personalRules=[
+    {rx:/\b(personnes? handicapees?|travailleurs? handicapes?|agefiph)\b/, allow:/\bhandicap\b/, reason:"réservée aux personnes en situation de handicap"},
+    {rx:/\b(demandeur d'emploi|chomeur|allocataire are|beneficiaire rsa)\b/, allow:/\b(chomage|demandeur emploi|are|rsa)\b/, reason:"réservée à une situation personnelle spécifique"}
+  ];
+  for(const r of personalRules){
+    if(r.rx.test(hay) && !r.allow.test(user)) return {exclude:true,reason:r.reason};
+  }
+
+  // Secteurs / métiers explicitement réservés.
+  const sectorRules=[
+    {rx:/\b(entreprises? de presse|services? de presse|agences? de presse|editeurs? de presse|éditeurs? de presse|fonds strategique pour le developpement de la presse|fonds stratégique pour le développement de la presse)\b/, allow:/\b(presse|journal|media|média|edition|édition)\b/, reason:"réservée aux entreprises de presse"},
+    {rx:/\b(secteur de la defense|secteur de la défense|minist[eè]re de la defense|minist[eè]re de la défense|base industrielle et technologique de defense|base industrielle et technologique de défense|pret def.?fi|prêt def.?fi)\b/, allow:/\b(defense|défense|armement|militaire)\b/, reason:"réservée à la filière défense"},
+    {rx:/\b(pme et eti des biens d'equipement|pme et eti des biens d’équipement|accelerateur biens d'equipement|accélérateur biens d’équipement)\b/, allow:/\b(biens d'equipement|biens d’équipement|fabrication|industrie|industriel|machine)\b/, reason:"réservée aux entreprises de biens d’équipement"},
+    {rx:/\b(filiere bois|filière bois|pp bois|industrie du bois)\b/, allow:/\b(bois|scierie|forest|menuiser|charpent)\b/, reason:"réservée à la filière bois"},
+    {rx:/\b(diffuseurs? de presse|kiosques? a journaux|kiosques? à journaux|presse ecrite|presse écrite)\b/, allow:/\b(presse|journaux|kiosque)\b/, reason:"réservée aux diffuseurs de presse"},
+    {rx:/\b(debits? de tabac|débits? de tabac|debitants? de tabac|débitants? de tabac)\b/, allow:/\b(tabac|buraliste)\b/, reason:"réservée aux débits de tabac"},
+    {rx:/\b(film de repertoire|film de répertoire|production de courts metrages|production de courts métrages|production cinematographique|production cinématographique)\b/, allow:/\b(cinema|film|video|audiovisuel)\b/, reason:"réservée au cinéma/audiovisuel"},
+    {rx:/\b(transporteurs?|transport public routier|taxi|poids lourds?)\b/, allow:/\b(transport|taxi|routier|logistique)\b/, reason:"réservée au transport routier"},
+    {rx:/\b(nouvelle industrie|industrialisation|entreprises industrielles|pme industrielles)\b/, allow:/\b(industrie|industriel|fabrication|manufactur)\b/, reason:"réservée aux projets industriels"},
+    {rx:/\b(top btp|entreprises du btp|secteur du btp)\b/, allow:/\b(btp|batiment|bâtiment|plomb|electric|électric|maçon|macon|construction)\b/, reason:"réservée au BTP"},
+    {rx:/\b(mode|habillement|textile|maroquinerie|defimode)\b/, allow:/\b(mode|textile|habillement|maroquinerie)\b/, reason:"réservée au secteur de la mode/textile"},
+    {rx:/\b(production phonographique|phonographique|enregistrement musical|edition phonographique)\b/, allow:/\b(phonograph|musique|label|enregistrement|edition musicale)\b/, reason:"réservée à la production phonographique"},
+    {rx:/\b(debit de tabac|debitant de tabac|buraliste)\b/, allow:/\b(tabac|buraliste)\b/, reason:"réservée aux débits de tabac"},
+    {rx:/\b(diffuseur de presse|kiosque a journaux|marchand de journaux)\b/, allow:/\b(presse|journaux|kiosque)\b/, reason:"réservée aux diffuseurs de presse"},
+    {rx:/\b(oenotouris|vignobles et decouvertes|viticulteur|viticole)\b/, allow:/\b(vin|viti|oenotour|vignoble)\b/, reason:"réservée à la filière viticole/œnotouristique"},
+    {rx:/\b(methanisation|methaniseur)\b/, allow:/\b(methan|agric|biogaz|dechet organique)\b/, reason:"réservée aux projets de méthanisation"},
+    {rx:/\b(metiers de bouche)\b/, allow:/\b(boulanger|patis|boucher|charcut|traiteur|restaurant|restauration|poisson|fromager)\b/, reason:"réservée aux métiers de bouche"},
+    {rx:/\b(agriculteur|exploitant agricole|entreprise agricole|elevage|agricole)\b/, allow:/\b(agric|ferme|elevage|viti)\b/, reason:"réservée au secteur agricole"},
+    {rx:/\b(pharmacie|pharmacien)\b/, allow:/\b(pharma)\b/, reason:"réservée aux pharmacies"},
+    {rx:/\b(coiffure|coiffeur|esthetique|institut de beaute)\b/, allow:/\b(coiff|esthet|beaute)\b/, reason:"réservée aux métiers de la beauté"},
+    {rx:/\b(cinema|cinematographique|audiovisuel)\b/, allow:/\b(cinema|film|video|audiovisuel)\b/, reason:"réservée au cinéma/audiovisuel"},
+    {rx:/\b(scierie|premiere transformation du bois|exploitation forestiere|sylviculture)\b/, allow:/\b(bois|scierie|forest|menuiser|charpent)\b/, reason:"réservée à la filière bois/forêt"},
+    {rx:/\b(peche maritime|aquaculture|armateur)\b/, allow:/\b(peche|maritime|aquaculture)\b/, reason:"réservée à la pêche/aquaculture"}
+  ];
+  for(const r of sectorRules){
+    // On cible surtout bénéficiaires/titre/objet pour éviter qu'un mot isolé
+    // dans une longue condition déclenche un faux blocage.
+    const focused=[title,benef,obj].join(" ");
+    if(r.rx.test(focused) && !r.allow.test(user)) return {exclude:true,reason:r.reason};
+  }
+
+
+  // Situations personnelles / profils de dirigeant non renseignés dans le formulaire.
+  if(/\b(garantie egalite femmes|garantie égalité femmes|femmes entrepreneures|femmes entrepreneurs)\b/.test(hay) && !/\bfemme\b/.test(user))
+    return {exclude:true,reason:"réservée aux femmes entrepreneures"};
+
+  if(/\b(grandes ecoles|grandes écoles|universites|universités|etudiants|étudiants|jeunes diplomes|jeunes diplômés)\b/.test([title,benef].join(" ")) &&
+     !/\b(etudiant|étudiant|diplome|diplômé|universite|université|ecole|école)\b/.test(user))
+    return {exclude:true,reason:"réservée à un public étudiant/diplômé spécifique"};
+
+  // Aides de recherche : un projet générique de création/investissement ne suffit pas.
+  if(/\b(recherche collaborative|credit d'impot recherche|crédit d'impôt recherche|organismes? de recherche)\b/.test([title,obj,benef].join(" ")) &&
+     !/\b(recherche|r&d|innovation)\b/.test(user) && !["innovation"].includes(p.project))
+    return {exclude:true,reason:"projet de recherche/R&D requis"};
+
+  // Porteurs publics uniquement
+  const publicOnly =
+    /\b(collectivites territoriales|communes|epci|etablissements publics)\b/.test(benef) &&
+    !/\b(entreprises?|pme|tpe|societes? privees?|personnes morales privees)\b/.test(benef);
+  if(publicOnly && p.companyStatus==="standard")
+    return {exclude:true,reason:"réservée aux acteurs publics / collectivités"};
+
+  // Associations uniquement
+  const assocOnly =
+    /\bassociation(s)?\b/.test(benef) &&
+    !/\b(entreprises?|pme|tpe|societes?|collectivites?)\b/.test(benef);
+  if(assocOnly && p.companyStatus!=="association")
+    return {exclude:true,reason:"réservée aux associations"};
+
+  return {exclude:false};
+}
+
+function universalMandatoryChecks(a,p){
+  const txt=norm([a.nom,a.benef,a.conditions,a.objet,a.operations].join(" "));
+  const checks=[];
+
+  function add(label,state,detail,hard=false){
+    checks.push({label,state,detail,hard});
+  }
+
+  // Projet exclusif création/reprise
+  const creationExclusive =
+    /\b(creation et reprise|creation\/reprise|création et reprise|création\/reprise)\b/.test(txt) ||
+    (/\bcreation\b/.test(txt) && /\breprise\b/.test(txt) &&
+     /\b(creer|reprendre|createur|repreneur|creation d'entreprise|reprise d'entreprise)\b/.test(txt));
+
+  if(creationExclusive){
+    if(p.project==="creation") add("Création / reprise","ok","Projet confirmé par le formulaire");
+    else add("Création / reprise","fail","Aide réservée aux projets de création ou reprise",true);
+  }
+
+  // Projet explicitement investissement / croissance
+  const growthExclusive =
+    /\b(projet de croissance|croissance de l'entreprise|developpement de l'entreprise)\b/.test(txt) &&
+    /\b(investissement|fonds de roulement|croissance)\b/.test(txt);
+  if(growthExclusive && p.project==="creation"){
+    add("Nature du projet","fail","La fiche vise une entreprise déjà en activité / en croissance",true);
+  }
+
+  // Ancienneté d'entreprise
+  const ageRules=[
+    {rx:/\b(au minimum|au moins|minimum de)\s*3\s*ans?\s*d['’ ]activite\b/,label:"Ancienneté",need:"gt3",detail:"Minimum 3 ans d’activité"},
+    {rx:/\b(plus de|depuis)\s*3\s*ans?\s*d['’ ]activite\b/,label:"Ancienneté",need:"gt3",detail:"Entreprise active depuis plus de 3 ans"},
+    {rx:/\bmoins de\s*3\s*ans?\s*d['’ ]activite\b/,label:"Ancienneté",need:"lt3",detail:"Entreprise de moins de 3 ans"},
+    {rx:/\bmoins de\s*(12 mois|1 an)\s*d['’ ]activite\b/,label:"Ancienneté",need:"lt1",detail:"Entreprise de moins d’un an"}
+  ];
+  for(const rule of ageRules){
+    if(rule.rx.test(txt)){
+      if(p.companyAge==="unknown") add(rule.label,"check",rule.detail);
+      else if(rule.need==="gt3" && p.companyAge!=="gt3") add(rule.label,"fail",rule.detail,true);
+      else if(rule.need==="lt3" && p.companyAge==="gt3") add(rule.label,"fail",rule.detail,true);
+      else if(rule.need==="lt1" && p.companyAge!=="lt1") add(rule.label,"fail",rule.detail,true);
+      else add(rule.label,"ok",rule.detail);
+    }
+  }
+
+
+
+  // Statuts, labels et adhésions obligatoires : si le formulaire ne les confirme pas,
+  // l'aide ne peut jamais être classée "Probablement éligible".
+  if(/\b(jeune entreprise innovante|statut jei|\bjei\b)\b/.test(txt)){
+    if(p.project==="innovation" || p.companyStatus==="startup")
+      add("Statut JEI","check","Le statut JEI et l’ensemble de ses critères doivent être confirmés");
+    else
+      add("Statut JEI","fail","Aide réservée aux entreprises remplissant les critères JEI",true);
+  }
+
+  if(/\b(jeune entreprise universitaire|statut jeu|\bjeu\b)\b/.test(txt))
+    add("Statut JEU","check","Le statut Jeune Entreprise Universitaire doit être confirmé");
+
+  if(/\b(adherent|adhérent|adherente|adhérente|membre)\b.{0,45}\b(uimm|federation|fédération|syndicat|reseau|réseau|organisation professionnelle)\b/.test(txt) ||
+     /\b(uimm)\b.{0,45}\b(adherent|adhérent|membre)\b/.test(txt))
+    add("Adhésion obligatoire","check","L’adhésion à l’organisation mentionnée doit être confirmée");
+
+  if(/\b(qualification|certification|label|agrement|agrément)\b.{0,55}\b(obligatoire|requis|exige|exigé|titulaire)\b/.test(txt))
+    add("Qualification / label","check","La qualification, certification, le label ou l’agrément requis doit être confirmé");
+
+  // Conditions R&D/innovation quantitatives ou structurelles.
+  if(/\b(depenses|dépenses).{0,45}\b(recherche|r&d|innovation)\b/.test(txt) ||
+     /\b(recherche|r&d|innovation).{0,45}\b(depenses|dépenses)\b/.test(txt))
+    add("Dépenses R&D","check","Le niveau de dépenses de R&D/innovation exigé doit être confirmé");
+
+  if(/\b(capital).{0,60}\b(detenu|détenu|independant|indépendant)\b/.test(txt))
+    add("Détention du capital","check","La structure et la détention du capital doivent être confirmées");
+
+  if(/\b(activite nouvelle|activité nouvelle|entreprise reellement nouvelle|entreprise réellement nouvelle)\b/.test(txt))
+    add("Caractère nouveau de l’activité","check","Le caractère réellement nouveau de l’activité doit être confirmé");
+
+  // Conditions financières / territoriales non présentes dans le formulaire
+  if(/\b(n'ayant pas acces au credit bancaire|n'ayant pas accès au crédit bancaire|sans acces au credit bancaire|sans accès au crédit bancaire)\b/.test(txt))
+    add("Accès au crédit bancaire","check","Absence d’accès au crédit bancaire à confirmer");
+
+  if(/\b(contrepartie bancaire|financement bancaire.{0,35}obligatoire|obligatoirement associe a un financement|obligatoirement associé à un financement)\b/.test(txt))
+    add("Co-financement bancaire","check","Financement bancaire / contrepartie à confirmer");
+
+  if(/\b(qpv|quartier prioritaire|zfu|zone franche urbaine|zrr|zone de revitalisation rurale|afr|zone aide a finalite regionale)\b/.test(txt))
+    add("Zone géographique","check","Implantation dans la zone précise à confirmer");
+
+  if(/\b(entreprise en difficulte|entreprise en difficulté|degradation importante de la tresorerie|dégradation importante de la trésorerie|plan de redressement)\b/.test(txt))
+    add("Situation financière","check","Situation de difficulté / trésorerie à confirmer");
+
+  if(/\b(fonds propres|quasi-fonds propres)\b/.test(txt) && /\b(au moins egal|au moins égal|limite des fonds propres|inferieur ou egal au montant des fonds propres|inférieur ou égal au montant des fonds propres)\b/.test(txt))
+    add("Fonds propres","check","Niveau de fonds propres à confirmer");
+
+  // Inscriptions / statuts
+  if(/\b(repertoire des metiers|répertoire des métiers|\brm\b)\b/.test(txt))
+    add("Inscription RM","check","Inscription au Répertoire des Métiers à confirmer");
+  if(/\b(registre du commerce|registre de commerce|\brcs\b)\b/.test(txt))
+    add("Inscription RCS","check","Inscription au RCS à confirmer");
+  if(/\b(registre national des entreprises|\brne\b)\b/.test(txt))
+    add("Inscription RNE","check","Immatriculation RNE à confirmer");
+
+  // Conditions administratives fréquentes
+  if(/\b(duerp|document unique d'evaluation des risques)\b/.test(txt))
+    add("DUERP","check","Document unique à jour à confirmer");
+  if(/\b(cotisations?.{0,25}urssaf|a jour de ses cotisations|situation sociale)\b/.test(txt))
+    add("Situation sociale","check","Cotisations / situation URSSAF à confirmer");
+  if(/\b(obligations? fiscales?|situation fiscale|a jour de ses obligations fiscales)\b/.test(txt))
+    add("Situation fiscale","check","Situation fiscale à confirmer");
+  if(/\b(non[- ]cumul|ne pas avoir beneficie|cumul des aides)\b/.test(txt))
+    add("Règles de cumul","check","Vérifier les aides déjà perçues");
+  if(/\b(rge|reconnu garant de l'environnement)\b/.test(txt))
+    add("Qualification RGE","check","Qualification RGE à confirmer");
+  if(/\b(diagnostic|audit|etude prealable|étude préalable)\b/.test(txt))
+    add("Étude / diagnostic","check","Une étude préalable peut être exigée");
+  if(/\b(devis|bon de commande|avant engagement|avant signature)\b/.test(txt))
+    add("Calendrier de dépense","check","Vérifier avant de signer ou engager la dépense");
+
+
+  // Garde-fou générique : certaines fiches imposent un statut/une appartenance
+  // que le formulaire actuel ne sait pas certifier.
+  const mandatoryMembership =
+    /\b(reserve aux|réservé aux|uniquement les|doivent etre|doivent être)\b.{0,80}\b(adherents|adhérents|membres|titulaires|labellises|labellisés|certifies|certifiés|agrees|agréés)\b/.test(txt);
+  if(mandatoryMembership)
+    add("Condition de bénéficiaire","check","Une appartenance, certification ou qualité obligatoire doit être confirmée");
+
+  // Taille explicite
+  if(/\b(tpe|tres petites entreprises|très petites entreprises)\b/.test(txt)){
+    if(["50-249","250+"].includes(p.employees)) add("Taille d’entreprise","fail","Aide réservée aux TPE",true);
+  }
+  if(/\bpme\b/.test(txt) && p.employees==="250+")
+    add("Taille d’entreprise","fail","Aide réservée aux PME",true);
+
+  return checks;
+}
+
+function mergeEligibilityChecks(a,r,p){
+  const base=detectEligibilityChecks(a,p);
+  const extra=universalMandatoryChecks(a,p);
+
+  const byKey=new Map();
+  for(const c of [].concat(Array.isArray(base)?base:[], Array.isArray(extra)?extra:[])){
+    const key=c.label;
+    if(!byKey.has(key)) byKey.set(key,c);
+    else{
+      const old=byKey.get(key);
+      const rank={ok:1,check:2,fail:3};
+      if(rank[c.state]>rank[old.state]) byKey.set(key,c);
+    }
+  }
+  return Array.from(byKey.values());
+}
+
+
+function eligibilitySummary(a,r,p){
+  const restricted=restrictedProfileGate(a,p);
+  const specialized=specializedProjectGate(a,p);
+  if(restricted.exclude || specialized.exclude){
+    const why=restricted.exclude?restricted.reason:specialized.reason;
+    return {
+      state:"no",
+      label:"Probablement non éligible",
+      checks:[{label:"Compatibilité",state:"fail",detail:why,hard:true}]
+    };
+  }
+  const checks=mergeEligibilityChecks(a,r,p);
+  const fails=checks.filter(x=>x.state==="fail");
+  const pending=checks.filter(x=>x.state==="check");
+  const hardFail=fails.some(x=>x.hard);
+
+  if(hardFail || fails.length){
+    return {state:"no",label:"Probablement non éligible",checks};
+  }
+  if(pending.length || (r.penalties&&r.penalties.length)){
+    return {state:"check",label:"Conditions obligatoires à confirmer",checks};
+  }
+  return {state:"yes",label:"Probablement éligible",checks};
+}
+
+function eligibilityHtml(a,r,p){
+  const s=eligibilitySummary(a,r,p);
+  const cls=s.state==="yes"?"high":s.state==="check"?"check":"check";
+  const icon=s.state==="yes"?"✅":s.state==="check"?"⚠️":"❌";
+  const rows=s.checks.map(c=>{
+    const i=c.state==="ok"?"✅":c.state==="fail"?"❌":"⚠️";
+    return `<div style="margin-top:7px">${i} <strong>${esc(c.label)}</strong> — ${esc(c.detail)}</div>`;
+  }).join("");
+  return `<div class="box ${s.state==="yes"?"":"warn"}">
+    <strong>${icon} ${s.label}</strong>
+    ${rows?`<div style="margin-top:8px">${rows}</div>`:""}
+  </div>`;
+}
+
+
+let LAST_DIAGNOSTIC=null;
+
+function buildDiagnostic(profile, rows, territorialCount, scoredCount){
+  return {
+    app:"AideRadar",
+    version:"9.1",
+    engine:"eligibility-engine-v2",
+    generated_at:new Date().toISOString(),
+    profile:{
+      activity:profile.activity,
+      activityDetail:profile.activityDetail,
+      naf:profile.naf,
+      companyStatus:profile.companyStatus,
+      companyAge:profile.companyAge,
+      department:profile.dept,
+      employees:profile.employees,
+      project:profile.project,
+      budget:profile.budget
+    },
+    database:{
+      loaded:DB.length,
+      territorial_matches:territorialCount,
+      project_budget_status_matches:scoredCount,
+      displayed:rows.length
+    },
+    results:rows.map(({a,r})=>{
+      const es=eligibilitySummary(a,r,profile);
+      const est=estimateAidAmount(a,profile.budget);
+      return {
+        id:a.id,
+        name:clean(a.nom),
+        eligibility:{
+          state:es.state,
+          label:es.label,
+          checks:es.checks
+        },
+        score:r.score,
+        reasons:r.reasons||[],
+        penalties:r.penalties||[],
+        geography:a.geo||"",
+        departments:a.deps||[],
+        end_date:a.fin||"",
+        amount_text:clean(a.montant||""),
+        estimated_amount:est||null,
+        minimum_budget:extractMinimumBudget(a),
+        beneficiaries:clean(a.benef||""),
+        object:clean(a.objet||""),
+        conditions:clean(a.conditions||""),
+        source:a.source||""
+      };
+    })
+  };
+}
+
+function downloadDiagnostic(){
+  if(!LAST_DIAGNOSTIC) return;
+  const blob=new Blob(
+    [JSON.stringify(LAST_DIAGNOSTIC,null,2)],
+    {type:"application/json;charset=utf-8"}
+  );
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const stamp=new Date().toISOString().replace(/[:.]/g,"-");
+  a.href=url;
+  a.download=`aideradar-diagnostic-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  const btn=document.getElementById("exportBtn");
+  if(btn) btn.addEventListener("click",downloadDiagnostic);
+});
+
+async function loadDB(){
+ const status=document.getElementById("status");
+ const btn=document.getElementById("submitBtn");
+ try{
+  const r=await fetch("./aides.json?v=15",{cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json();
+  DB=Array.isArray(j)?j:(j.aides||[]);
+  if(!DB.length) throw new Error("Base vide");
+  status.textContent=`✅ ${DB.length.toLocaleString("fr-FR")} aides actives chargées · données : ${j.updated||"source officielle"}`;
+  btn.disabled=false;btn.textContent="Analyser les aides";
+ }catch(err){
+  status.textContent="❌ Erreur de chargement de la base : "+err.message;
+  btn.textContent="Base indisponible";
+ }
+}
+loadDB();
+
+document.getElementById("radarForm").addEventListener("submit",function(e){
+ e.preventDefault();
+ try{
+ const p={
+  activity:document.getElementById("activity").value,
+  activityDetail:document.getElementById("activityDetail").value.trim(),
+  naf:document.getElementById("naf").value.trim(),
+  companyStatus:document.getElementById("companyStatus").value,
+  companyAge:document.getElementById("companyAge").value,
+  dept:document.getElementById("dept").value.trim(),
+  employees:document.getElementById("employees").value,
+  project:document.getElementById("project").value,
+  budget:Number(document.getElementById("budget").value||0)
+ };
+
+ const territorial=DB.filter(a=>(a.deps||[]).includes("ALL")||(a.deps||[]).includes(p.dept));
+ const scored=territorial.map(a=>({a,r:scoreAid(a,p)})).filter(x=>x.r!==null);
+
+ // Les incompatibilités certaines ne sont plus montrées à l'utilisateur.
+ const eligibleScored=scored.filter(x=>eligibilitySummary(x.a,x.r,p).state!=="no");
+
+ const rankState={yes:2,check:1,no:0};
+ eligibleScored.sort((x,y)=>{
+   const xs=eligibilitySummary(x.a,x.r,p).state;
+   const ys=eligibilitySummary(y.a,y.r,p).state;
+   return (rankState[ys]-rankState[xs]) || (y.r.score-x.r.score);
+ });
+
+ const strong=eligibleScored.filter(x=>x.r.score>=50);
+ const rows=(strong.length?strong:eligibleScored).slice(0,12);
+
+ const list=document.getElementById("list");
+ if(!rows.length){
+  list.innerHTML='<div class="result">Aucune aide suffisamment compatible n’a été trouvée pour ce profil. Ce n’est pas une panne : les filtres ont écarté les résultats incompatibles.</div>';
+ }else{
+  list.innerHTML=rows.map(({a,r})=>{
+   const es=eligibilitySummary(a,r,p);
+   let cls=es.state==="yes"?(r.score>=80?"high":"medium"):"check";
+   let lab=es.state==="yes"?(r.score>=80?"Très pertinent":"Pertinent"):"À vérifier";
+   return `<article class="result">
+    <span class="badge ${cls}">${lab}</span>
+    <h3>${esc(clean(a.nom))}</h3>
+    <div class="meta">📍 ${esc(a.geo||((a.deps||[]).includes("ALL")?"Aide nationale":"Aide territoriale"))}${a.fin?` · ⏳ fin : ${esc(a.fin)}`:""}</div>
+    ${eligibilityHtml(a,r,p)}
+    ${extractMinimumBudget(a)?`<div class="box"><strong>Budget minimum détecté</strong><br>${extractMinimumBudget(a).toLocaleString("fr-FR")} €</div>`:""}
+    ${estimateAidAmount(a,p.budget)?(()=>{
+      const e=estimateAidAmount(a,p.budget);
+      if(e.ambiguous){
+        return `<div class="box warn"><strong>Montant à préciser</strong><br>${esc(e.reason)}.<br><span style="font-size:12px">AideRadar n’affiche pas d’estimation chiffrée lorsque la formule est trop ambiguë.</span></div>`;
+      }
+      if(e.financeRange){
+        const min=e.minAmount?euro(e.minAmount):"";
+        const max=e.maxAmount?euro(e.maxAmount):"";
+        const amount=min&&max?`${min} à ${max}`:(max?`jusqu’à ${max}`:"Montant à déterminer");
+        return `<div class="box" style="background:#ecfdf3"><strong>Fourchette de financement indiquée</strong><br><span style="font-size:22px;font-weight:800">${amount}</span><br><span style="font-size:12px;color:#667085">Il s’agit d’un prêt/financement, pas d’une subvention calculée sur le budget du projet.</span></div>`;
+      }
+      const label="Aide potentielle estimée";
+      const amount=euro(e.maxAmount);
+      const rate=`${e.maxRate} %`;
+      const cap=e.cap?` · plafond détecté : ${euro(e.cap)}`:"";
+      return `<div class="box" style="background:#ecfdf3"><strong>${label}</strong><br><span style="font-size:22px;font-weight:800">${amount}</span><br><span style="color:#667085">${rate}${cap}</span><br><span style="font-size:12px;color:#667085">Estimation indicative à partir du budget saisi. Les dépenses réellement éligibles peuvent être différentes.</span></div>`;
+    })():""}
+    ${a.montant?`<div class="box"><strong>Montant / avantage</strong><br>${esc(short(a.montant,500))}</div>`:""}
+    ${a.objet?`<div class="box"><strong>Objet</strong><br>${esc(short(a.objet))}</div>`:""}
+    ${a.benef?`<div class="box"><strong>Bénéficiaires</strong><br>${esc(short(a.benef))}</div>`:""}
+    <div class="box"><strong>Pourquoi AideRadar l’a retenue</strong><br>${esc(r.reasons.join(" · "))}</div>
+    ${r.penalties?.length?`<div class="box warn"><strong>Éligibilité à vérifier</strong><br>${esc(r.penalties.join(" · "))}</div>`:""}
+    ${a.conditions?`<div class="box warn"><strong>Conditions à vérifier</strong><br>${esc(short(a.conditions))}</div>`:""}
+    ${a.source?`<a class="source" href="${esc(a.source)}" target="_blank" rel="noopener">Voir la source ↗</a>`:""}
+   </article>`;
+  }).join("");
+ }
+ document.getElementById("debug").textContent=`Analyse : ${DB.length} aides chargées · ${territorial.length} territoriales/nationales · ${scored.length} après filtres métier/projet/budget · ${eligibleScored.length} non exclues · ${rows.length} affichées.`;
+
+ LAST_DIAGNOSTIC=buildDiagnostic(p,rows,territorial.length,scored.length);
+ const exportBtn=document.getElementById("exportBtn");
+ const exportInfo=document.getElementById("exportInfo");
+ if(exportBtn) exportBtn.style.display="block";
+ if(exportInfo) exportInfo.style.display="block";
+
+ document.getElementById("results").style.display="block";
+ document.getElementById("results").scrollIntoView({behavior:"smooth"});
+ }catch(err){
+   console.error("AideRadar submit error",err);
+   const resultsEl=document.getElementById("results");
+   const listEl=document.getElementById("list");
+   if(resultsEl) resultsEl.style.display="block";
+   if(listEl) listEl.innerHTML=`<div class="result"><strong>Erreur du moteur</strong><br>${esc(err?.message||String(err))}<br><span class="small">Recharge la page puis réessaie. Si l’erreur revient, envoie simplement ce message.</span></div>`;
+   const exportBtn=document.getElementById("exportBtn");
+   if(exportBtn) exportBtn.style.display="none";
+ }
+});
+</script>
+</body></html>
