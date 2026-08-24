@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AideRadar — Trouvez les aides adaptées à votre entreprise</title>
+  <meta name="description" content="AideRadar aide les TPE et indépendants à repérer rapidement les aides et subventions potentiellement adaptées à leur projet." />
+  <style>
+    :root{
+      --bg:#f6f8fb;--card:#ffffff;--text:#101828;--muted:#667085;
+      --primary:#2563eb;--primary2:#1d4ed8;--line:#e4e7ec;
+      --good:#067647;--goodbg:#ecfdf3;--warn:#b54708;--warnbg:#fffaeb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:0 auto;padding:22px 16px 60px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;margin-bottom:28px}
+    .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#60a5fa);display:grid;place-items:center;color:white}
+    h1{font-size:36px;line-height:1.05;margin:0 0 12px;letter-spacing:-1px}
+    .lead{font-size:18px;line-height:1.5;color:var(--muted);margin:0 0 24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 8px 30px rgba(16,24,40,.06)}
+    label{display:block;font-weight:650;margin:16px 0 7px}
+    label:first-child{margin-top:0}
+    input,select{width:100%;border:1px solid #d0d5dd;background:white;border-radius:12px;padding:14px;font-size:16px;color:var(--text);outline:none}
+    input:focus,select:focus{border-color:#84adff;box-shadow:0 0 0 4px #eff4ff}
+    button{width:100%;border:0;border-radius:13px;background:var(--primary);color:white;font-weight:750;font-size:17px;padding:15px;margin-top:18px}
+    button:active{background:var(--primary2);transform:translateY(1px)}
+    .small{font-size:13px;color:var(--muted);line-height:1.45;margin:12px 2px 0}
+    #results{display:none;margin-top:22px}
+    .result{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;margin-top:12px}
+    .score{display:inline-block;background:var(--goodbg);color:var(--good);font-size:13px;font-weight:750;padding:6px 9px;border-radius:999px}
+    .result h3{margin:12px 0 7px;font-size:20px}
+    .meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+    .why{background:#f9fafb;border-radius:12px;padding:12px;font-size:14px;line-height:1.45}
+    .warning{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:10px}
+    .source{display:inline-block;margin-top:12px;color:var(--primary);font-weight:700;text-decoration:none}
+    footer{margin-top:30px;color:var(--muted);font-size:12px;line-height:1.5}
+    @media(max-width:480px){h1{font-size:31px}.lead{font-size:16px}.wrap{padding-top:18px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand"><div class="logo">€</div>AideRadar</div>
+    <h1>Les aides adaptées à votre entreprise, sans chercher pendant des heures.</h1>
+    <p class="lead">Décrivez votre activité et votre projet. AideRadar vous montre les dispositifs qui semblent les plus pertinents.</p>
+
+    <section class="card">
+      <form id="radarForm">
+        <label for="activity">Votre activité</label>
+        <select id="activity" required>
+          <option value="">Choisir…</option>
+          <option>Artisan / BTP</option>
+          <option>Commerce</option>
+          <option>Transport</option>
+          <option>Restauration</option>
+          <option>Services</option>
+          <option>Industrie</option>
+          <option>Autre</option>
+        </select>
+
+        <label for="dept">Département</label>
+        <input id="dept" inputmode="numeric" maxlength="3" placeholder="Ex. 89" required />
+
+        <label for="employees">Nombre de salariés</label>
+        <select id="employees" required>
+          <option value="">Choisir…</option>
+          <option value="0">0</option>
+          <option value="1-9">1 à 9</option>
+          <option value="10-49">10 à 49</option>
+          <option value="50+">50 ou plus</option>
+        </select>
+
+        <label for="project">Votre projet</label>
+        <select id="project" required>
+          <option value="">Choisir…</option>
+          <option value="vehicle">Acheter / remplacer un véhicule</option>
+          <option value="equipment">Acheter du matériel</option>
+          <option value="energy">Réduire les dépenses d'énergie</option>
+          <option value="digital">Numériser / créer un site / logiciel</option>
+          <option value="hire">Recruter / former</option>
+          <option value="create">Créer ou reprendre une entreprise</option>
+          <option value="other">Autre projet</option>
+        </select>
+
+        <label for="budget">Budget du projet (€)</label>
+        <input id="budget" type="number" min="0" step="100" placeholder="Ex. 25000" required />
+
+        <button type="submit">Trouver mes aides</button>
+        <p class="small">Prototype : les résultats ci-dessous servent uniquement à tester l'expérience utilisateur. La V1 connectera des sources officielles et affichera la date de mise à jour de chaque dispositif.</p>
+      </form>
+    </section>
+
+    <section id="results">
+      <h2>Vos résultats</h2>
+      <div id="resultList"></div>
+    </section>
+
+    <footer>
+      AideRadar ne remplace pas l'avis d'un organisme public, d'un expert-comptable ou d'un conseiller spécialisé. Une aide affichée comme « potentiellement compatible » doit toujours être vérifiée sur sa source officielle avant toute demande.
+    </footer>
+  </main>
+
+  <script>
+    const demo = [
+      {title:"Aide à l'investissement des TPE", tags:["equipment","digital","energy"], min:2000, score:92, amount:"Montant variable selon dispositif", why:"Votre projet d'investissement et la taille de l'entreprise peuvent correspondre à des aides territoriales destinées aux TPE.", warn:"Les critères varient selon la région et le type de dépense.", url:"https://entreprendre.service-public.fr/vosdroits/F32886"},
+      {title:"Aides à la transition écologique", tags:["energy","vehicle","equipment"], min:1000, score:86, amount:"Selon le projet et le dispositif", why:"Les investissements liés à l'énergie, aux véhicules propres ou à certains équipements peuvent ouvrir droit à des dispositifs dédiés.", warn:"Vérifier les dépenses éligibles avant de signer un devis.", url:"https://agirpourlatransition.ademe.fr/entreprises/aides-financieres"},
+      {title:"Aides à la création ou reprise d'entreprise", tags:["create"], min:0, score:84, amount:"Selon votre situation", why:"Votre projet concerne la création ou la reprise d'une entreprise ; plusieurs accompagnements nationaux et locaux peuvent être pertinents.", warn:"Certaines aides dépendent de votre situation personnelle et du calendrier de la création.", url:"https://entreprendre.service-public.fr/vosdroits/N16153"},
+      {title:"Aides à la formation et au recrutement", tags:["hire"], min:0, score:81, amount:"Selon contrat, profil et formation", why:"Des aides peuvent réduire le coût d'une embauche ou financer tout ou partie d'une formation.", warn:"Les conditions dépendent du profil recruté et du type de contrat.", url:"https://entreprendre.service-public.fr/vosdroits/N23663"},
+      {title:"Aides à la transformation numérique", tags:["digital"], min:500, score:79, amount:"Variable selon territoire", why:"Certains territoires accompagnent les TPE dans l'achat d'outils numériques, logiciels, prestations web ou cybersécurité.", warn:"Tous les départements ne proposent pas un dispositif actif en permanence.", url:"https://les-aides.fr/"}
+    ];
+
+    document.getElementById("radarForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const project = document.getElementById("project").value;
+      const budget = Number(document.getElementById("budget").value || 0);
+      const dept = document.getElementById("dept").value.trim();
+      let matches = demo
+        .filter(a => a.tags.includes(project) && budget >= a.min)
+        .map((a,i) => ({...a, score: Math.max(60, a.score - i*4)}));
+
+      if (!matches.length) {
+        matches = [{
+          title:"Recherche personnalisée nécessaire",
+          score:68,
+          amount:"À déterminer",
+          why:`Aucun résultat de démonstration ne couvre encore précisément ce projet dans le département ${dept}. La V1 effectuera une recherche sur les bases officielles.`,
+          warn:"Ce résultat est uniquement un placeholder de prototype.",
+          url:"https://entreprendre.service-public.fr/vosdroits/R18133"
+        }];
+      }
+
+      const list = document.getElementById("resultList");
+      list.innerHTML = matches.map(a => `
+        <article class="result">
+          <span class="score">Potentiellement compatible · ${a.score}%</span>
+          <h3>${a.title}</h3>
+          <div class="meta">💶 ${a.amount}</div>
+          <div class="why"><strong>Pourquoi c'est pertinent :</strong><br>${a.why}</div>
+          <div class="warning">⚠️ ${a.warn}</div>
+          <a class="source" href="${a.url}" target="_blank" rel="noopener">Voir une source officielle ↗</a>
+        </article>
+      `).join("");
+      document.getElementById("results").style.display = "block";
+      document.getElementById("results").scrollIntoView({behavior:"smooth"});
+    });
+  </script>
+</body>
+</html>
