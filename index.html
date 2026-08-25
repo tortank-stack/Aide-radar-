@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="AideRadar aide les entreprises à identifier, prioriser et préparer leurs demandes d’aides publiques.">
 <meta name="theme-color" content="#ffffff">
-<title>AideRadar — V1.3</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>AideRadar — V3.0 CONNECTÉE</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -225,13 +227,24 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   a{color:#000!important;text-decoration:none!important}
 }
 
+
+/* V3 connected layer */
+.live-sync-panel{margin-top:10px;border:1px solid #d0d5dd;border-radius:14px;padding:12px;background:linear-gradient(180deg,#f8fafc,#fff)}
+.live-sync-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.live-sync-head strong{font-size:13px}.live-sync-head .spacer{flex:1}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#98a2b3;box-shadow:0 0 0 4px #f2f4f7}.live-dot.ok{background:#12b76a;box-shadow:0 0 0 4px #ecfdf3}.live-dot.warn{background:#f79009;box-shadow:0 0 0 4px #fffaeb}.live-dot.busy{background:#2e90fa;box-shadow:0 0 0 4px #eff8ff;animation:v3pulse 1.2s infinite}.live-dot.err{background:#f04438;box-shadow:0 0 0 4px #fef3f2}@keyframes v3pulse{50%{opacity:.35}}
+.live-sync-btn{width:auto!important;min-height:36px!important;padding:7px 10px!important;margin:0!important;font-size:12px!important;background:#101828!important;border-radius:10px!important}.live-sync-btn:disabled{opacity:.55}
+.live-sync-detail{font-size:12px;line-height:1.45;color:#667085;margin-top:8px}.live-sync-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.live-chip{font-size:10px;font-weight:800;padding:5px 7px;border-radius:999px;background:#f2f4f7;color:#475467}.live-chip.good{background:#ecfdf3;color:#067647}.live-chip.warn{background:#fffaeb;color:#b54708}
+.live-change-alert{margin-top:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:11px;padding:9px 10px;font-size:12px;line-height:1.45}.live-change-alert button{width:auto!important;min-height:32px!important;padding:5px 8px!important;margin:6px 0 0!important;font-size:11px!important;background:#9a3412!important}
+.live-update-note{font-size:11px;color:#475467;margin-top:5px;padding-top:5px;border-top:1px dashed #e4e7ec}
+@media(max-width:520px){.live-sync-btn{width:100%!important}.live-sync-head .spacer{display:none}}
+
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span class="release-badge">V2.0 FINAL</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V3.0 CONNECTÉE</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
-<p class="small" style="margin-top:-6px">Version 2.0 · moteur V1.4 conservé · dossier de financement · sauvegarde multi-projets · export PDF · base embarquée.</p>
+<p class="small" style="margin-top:-6px">Version 3.0 · moteur V1.4 conservé · synchronisation open data · détection des changements · dossier de financement · sauvegarde multi-projets.</p>
 
 <section class="card">
 <div class="ar-intro"><strong>🎯 Trouvez vos aides en moins d’une minute</strong><span><span class="ar-step">1</span>Entreprise &nbsp; <span class="ar-step">2</span>Projet &nbsp; <span class="ar-step">3</span>Aides à vérifier en priorité</span></div>
@@ -490,9 +503,20 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   </div>
 </section>
 </form>
-<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V2.0…</div>
+<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V3.0…</div>
 <button type="button" id="retryDbBtn" class="retry-db" hidden>↻ Réessayer le chargement</button>
 <div id="baseFreshness" class="small" style="margin-top:7px"></div>
+<div id="liveSyncPanel" class="live-sync-panel" aria-live="polite">
+  <div class="live-sync-head">
+    <span id="liveSyncDot" class="live-dot"></span>
+    <strong id="liveSyncState">Mode connecté en attente</strong>
+    <span class="spacer"></span>
+    <button type="button" id="liveSyncBtn" class="live-sync-btn">↻ Actualiser les aides</button>
+  </div>
+  <div id="liveSyncDetail" class="live-sync-detail">La base embarquée reste disponible immédiatement. AideRadar vérifie ensuite si une version plus récente des données publiques existe.</div>
+  <div id="liveSyncMeta" class="live-sync-meta"></div>
+  <div id="liveChangeAlert" class="live-change-alert" hidden></div>
+</div>
 </section>
 
 <section id="projectLibrary" class="card project-library">
@@ -1472,6 +1496,7 @@ function dedupeRankedRows(rows,p){
   return out;
 }
 function scoreAid(a,p){
+ if(a&&a._live_hidden) return null;
  let score=0,reasons=[],penalties=[];
 
  // 0. Restrictions obligatoires du bénéficiaire
@@ -3682,7 +3707,7 @@ async function loadDB(){
  const retry=document.getElementById("retryDbBtn");
  if(btn){btn.disabled=true;btn.textContent="Chargement de la base…";}
  if(retry) retry.hidden=true;
- if(status) status.textContent="Chargement de la base intégrée V2.0…";
+ if(status) status.textContent="Chargement de la base intégrée V3.0…";
  try{
   const j=AIDERADAR_EMBEDDED_DB;
   DB=Array.isArray(j)?j:(j.aides||[]);
@@ -4032,7 +4057,7 @@ document.getElementById("radarForm").addEventListener("submit",async function(e)
 </script>
 
 <script>
-/* AideRadar V2.0 — couche dossier/financement, sans modifier le moteur d'éligibilité V1.4 */
+/* AideRadar V2.0 — couche dossier/financement, conservée dans V3.0 */
 const V2_PROJECTS_KEY="aideradar:v2:projects";
 
 function v2Num(id){return Math.max(0,Number(document.getElementById(id)?.value||0)||0);}
@@ -4179,6 +4204,128 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("exportProjectBtn")?.addEventListener("click",v2DossierExport);
   document.getElementById("savedProjectList")?.addEventListener("click",e=>{const l=e.target.closest?.("[data-load-project]");if(l)loadV2Project(l.dataset.loadProject);const d=e.target.closest?.("[data-delete-project]");if(d)deleteV2Project(d.dataset.deleteProject);});
   ["personalContribution","bankAmount"].forEach(id=>document.getElementById(id)?.addEventListener("input",()=>{if(LAST_RESULT_PROFILE&&LAST_RESULT_ROWS?.length){LAST_RESULT_PROFILE.personalContribution=v2Num("personalContribution");LAST_RESULT_PROFILE.bankAmount=v2Num("bankAmount");renderV2FinancialCockpit(LAST_RESULT_ROWS,LAST_RESULT_PROFILE);}}));
+});
+</script>
+
+
+<script>
+/* AideRadar V3.0 — couche connectée, avec repli intégral sur la base embarquée */
+const V3_VERSION="3.0.0";
+const V3_DATASET_API="https://www.data.gouv.fr/api/1/datasets/?q=Aides%20entreprises&page_size=20";
+const V3_FALLBACK_CSV="https://www.data.gouv.fr/api/1/datasets/r/61fb1ddf-b457-4884-afb3-7855f77591de";
+const V3_CACHE_DB="aideradar-v3-cache";
+const V3_CACHE_STORE="kv";
+const V3_SYNC_MAX_AGE=24*60*60*1000;
+window.AIDERADAR_V3_META={mode:"embedded",lastSync:"",remoteModified:"",matched:0,changes:0,pendingNew:0,error:""};
+
+function v3NormKey(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();}
+function v3HeaderMap(headers){const m={};headers.forEach((h,i)=>m[v3NormKey(h)]=i);return m;}
+function v3Pick(row,map,aliases){for(const a of aliases){const i=map[v3NormKey(a)];if(i!==undefined && String(row[i]??"").trim()) return String(row[i]).trim();}return "";}
+function v3ExtractUrl(raw){const s=String(raw||"");const m=s.match(/https?:\/\/[^\s"'<>;,\\]+/i);return m?m[0].replace(/[\)\].]+$/g,""):"";}
+function v3ParseCSV(text){
+  text=String(text||""); if(!text.trim()) return [];
+  const first=(text.match(/^[^\r\n]*/)||[""])[0];
+  const semi=(first.match(/;/g)||[]).length, comma=(first.match(/,/g)||[]).length, tab=(first.match(/\t/g)||[]).length;
+  const d=tab>semi&&tab>comma?"\t":semi>=comma?";":",";
+  const rows=[];let row=[],field="",quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(quoted){if(c==='"'){if(text[i+1]==='"'){field+='"';i++;}else quoted=false;}else field+=c;continue;}
+    if(c==='"'){quoted=true;continue;} if(c===d){row.push(field);field="";continue;}
+    if(c==='\n'){row.push(field.replace(/\r$/,""));rows.push(row);row=[];field="";continue;} field+=c;
+  }
+  if(field.length||row.length){row.push(field.replace(/\r$/,""));rows.push(row);} return rows.filter(r=>r.some(x=>String(x||"").trim()));
+}
+function v3OpenCache(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open(V3_CACHE_DB,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(V3_CACHE_STORE))db.createObjectStore(V3_CACHE_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);}catch(e){reject(e);}})}
+async function v3CacheGet(k){try{const db=await v3OpenCache();return await new Promise((res,rej)=>{const r=db.transaction(V3_CACHE_STORE,"readonly").objectStore(V3_CACHE_STORE).get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)});}catch(_){return null}}
+async function v3CachePut(k,v){try{const db=await v3OpenCache();await new Promise((res,rej)=>{const tx=db.transaction(V3_CACHE_STORE,"readwrite");tx.objectStore(V3_CACHE_STORE).put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)});return true;}catch(_){return false}}
+function v3SetState(kind,title,detail,meta=[]){
+  const dot=document.getElementById("liveSyncDot"),st=document.getElementById("liveSyncState"),de=document.getElementById("liveSyncDetail"),me=document.getElementById("liveSyncMeta");
+  if(dot)dot.className="live-dot "+kind;if(st)st.textContent=title;if(de)de.textContent=detail||"";
+  if(me)me.innerHTML=(meta||[]).map(x=>`<span class="live-chip ${x.kind||""}">${esc(x.text)}</span>`).join("");
+}
+function v3DateLabel(v){if(!v)return "—";const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"});}
+function v3ApplyPatches(patches,remoteMeta){
+  if(!patches||typeof patches!=="object")return {matched:0}; const byId=new Map(DB.map(a=>[String(a.id||a.id_aid||""),a]));let matched=0;
+  for(const [id,p] of Object.entries(patches)){const a=byId.get(String(id));if(!a)continue;Object.assign(a,p);matched++;}
+  if(remoteMeta){window.AIDERADAR_V3_META.remoteModified=remoteMeta.remoteModified||"";window.AIDERADAR_V3_META.lastSync=remoteMeta.syncedAt||"";window.AIDERADAR_V3_META.matched=matched;}
+  return {matched};
+}
+async function v3DiscoverDataset(){
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch(V3_DATASET_API,{cache:"no-store",signal:ctl.signal});if(!r.ok)throw new Error("Métadonnées data.gouv indisponibles");const j=await r.json();
+    const list=j.data||j.results||[];let ds=list.find(x=>v3NormKey(x.title||x.name)==="aides entreprises"&&/institut superieur des metiers/i.test((x.organization?.name||x.organization?.title||"")))||list.find(x=>v3NormKey(x.title||x.name)==="aides entreprises")||list[0];
+    if(!ds)throw new Error("Jeu de données introuvable");const resources=ds.resources||[];
+    let res=resources.find(x=>/aides/i.test(x.title||x.name||x.description||"")&&String(x.format||"").toLowerCase()==="csv");
+    if(!res)res=resources.filter(x=>String(x.format||"").toLowerCase()==="csv").sort((a,b)=>Math.abs((Number(a.filesize||a.file_size||0))-5700000)-Math.abs((Number(b.filesize||b.file_size||0))-5700000))[0];
+    return {remoteModified:res?.last_modified||res?.modified||ds.last_update||ds.last_modified||"",csvUrl:res?.url||res?.latest||V3_FALLBACK_CSV,datasetUpdated:ds.last_update||ds.last_modified||""};
+  }finally{clearTimeout(tm)}
+}
+function v3BuildRemotePatch(csvText){
+  const rows=v3ParseCSV(csvText);if(rows.length<1000)throw new Error(`Flux incomplet (${rows.length} lignes)`);const headers=rows[0],map=v3HeaderMap(headers),out={},changes=[],known=new Map(DB.map(a=>[String(a.id||a.id_aid||""),a]));let matched=0,pendingNew=0,disabled=0;
+  const A={id:["id_aid","id aide","id"],nom:["aid_nom","nom"],objet:["aid_objet","objet"],operations:["aid_operations_el","operations eligibles","opérations éligibles"],conditions:["aid_conditions","conditions"],montant:["aid_montant","montant"],benef:["aid_benef","beneficiaires","bénéficiaires"],source:["complements_sources","aid_url","url_aide","url","source"],fin:["date_fin","date fin"],status:["status","statut"],modified:["horodatage","date modification"],validation:["aid_validation","date validation"]};
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i],id=v3Pick(r,map,A.id);if(!id)continue;const base=known.get(String(id));if(!base){pendingNew++;continue;}matched++;
+    const p={},diff=[];for(const k of ["nom","objet","operations","conditions","montant","benef"]){const v=v3Pick(r,map,A[k]);if(v&&String(base[k]||"")!==v){p[k]=v;diff.push(k)}}
+    const src=v3ExtractUrl(v3Pick(r,map,A.source));if(src&&String(base.source||"")!==src){p.source=src;diff.push("source")}
+    const fin=v3Pick(r,map,A.fin);if(fin&&String(base.fin||"")!==fin){p.fin=fin;diff.push("date_fin")}
+    const status=v3Pick(r,map,A.status),hidden=status!==""&&!(["1","online","en ligne"].includes(v3NormKey(status))||status==="1");if(status!==""){p._live_hidden=hidden;if(hidden)disabled++;}
+    p._live={modified:v3Pick(r,map,A.modified),validation:v3Pick(r,map,A.validation),status:status||"",syncedAt:new Date().toISOString()};
+    out[id]=p;if(diff.length)changes.push({id,name:p.nom||base.nom||id,source:p.source||base.source||"",fields:diff});
+  }
+  if(matched<Math.min(1500,Math.floor(DB.length*.6)))throw new Error(`Correspondance insuffisante (${matched}/${DB.length})`);
+  return {patches:out,changes,matched,pendingNew,disabled,rowCount:rows.length-1};
+}
+function v3SavedProjectAlerts(changes){
+  const box=document.getElementById("liveChangeAlert");if(!box)return;const saved=loadV2Projects?.()||[];if(!saved.length||!changes?.length){box.hidden=true;return;}
+  const changedByName=new Map(changes.map(x=>[v3NormKey(x.name),x]));const changedBySource=new Map(changes.filter(x=>x.source).map(x=>[String(x.source).split("?")[0],x]));const hits=[];
+  for(const p of saved){for(const a of (p.top_aids||[])){const c=changedByName.get(v3NormKey(a.name))||changedBySource.get(String(a.source||"").split("?")[0]);if(c)hits.push({project:p.name,aid:c.name,fields:c.fields});}}
+  const uniq=[];const seen=new Set();for(const h of hits){const k=h.project+"|"+h.aid;if(!seen.has(k)){seen.add(k);uniq.push(h)}}
+  if(!uniq.length){box.hidden=true;return;}box.hidden=false;box.innerHTML=`<strong>⚠️ ${uniq.length} aide(s) suivie(s) ont changé depuis la dernière synchronisation.</strong><br>${uniq.slice(0,3).map(h=>`${esc(h.aid)} — ${esc(h.fields.join(", "))}`).join("<br>")}${uniq.length>3?`<br>+ ${uniq.length-3} autre(s) changement(s)`:""}`;
+}
+async function v3SyncNow(force=false){
+  const btn=document.getElementById("liveSyncBtn");if(btn){btn.disabled=true;btn.textContent="Synchronisation…";}v3SetState("busy","Vérification des données publiques","Connexion à data.gouv.fr…");
+  try{
+    const cached=await v3CacheGet("snapshot");if(cached?.patches)v3ApplyPatches(cached.patches,cached.meta||{});
+    const remote=await v3DiscoverDataset();const remoteKey=String(remote.remoteModified||remote.datasetUpdated||"");
+    const cacheFresh=cached?.meta?.remoteModified&&remoteKey&&String(cached.meta.remoteModified)===remoteKey;
+    const recent=cached?.meta?.syncedAt&&(Date.now()-new Date(cached.meta.syncedAt).getTime()<V3_SYNC_MAX_AGE);
+    if(!force&&cacheFresh&&recent){
+      window.AIDERADAR_V3_META={...window.AIDERADAR_V3_META,mode:"connected-cache",remoteModified:remoteKey,lastSync:cached.meta.syncedAt,matched:cached.meta.matched||0,changes:cached.changes?.length||0,pendingNew:cached.meta.pendingNew||0,error:""};
+      v3SetState("ok","Données connectées à jour",`Synchronisation vérifiée. Jeu public : ${v3DateLabel(remoteKey)}.`,[{text:`${(cached.meta.matched||DB.length).toLocaleString("fr-FR")} fiches suivies`,kind:"good"},{text:"Base embarquée de secours"},{text:`Dernier contrôle ${v3DateLabel(cached.meta.syncedAt)}`}]);v3SavedProjectAlerts(cached.changes||[]);return;
+    }
+    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);let resp;try{resp=await fetch(remote.csvUrl||V3_FALLBACK_CSV,{cache:"no-store",signal:ctl.signal});}finally{clearTimeout(tm)}
+    if(!resp.ok)throw new Error(`Téléchargement impossible (${resp.status})`);const text=await resp.text();const built=v3BuildRemotePatch(text);const meta={remoteModified:remoteKey||new Date().toISOString(),syncedAt:new Date().toISOString(),matched:built.matched,pendingNew:built.pendingNew,rowCount:built.rowCount};
+    const previous=cached?.patches||{};const delta=[];if(cached?.patches){for(const c of built.changes){const old=previous[c.id]||{};const np=built.patches[c.id]||{};if(c.fields.some(f=>String(old[f]??"")!==String(np[f]??"")))delta.push(c)}}
+    v3ApplyPatches(built.patches,meta);await v3CachePut("snapshot",{meta,patches:built.patches,changes:delta});
+    window.AIDERADAR_V3_META={mode:"connected",lastSync:meta.syncedAt,remoteModified:meta.remoteModified,matched:built.matched,changes:delta.length,pendingNew:built.pendingNew,error:""};
+    v3SetState("ok","Synchronisation en ligne réussie",`${built.matched.toLocaleString("fr-FR")} fiches existantes ont été recoupées avec le flux public. Les nouvelles aides non encore indexées restent volontairement hors résultats jusqu’à enrichissement.`,[{text:`Source ${v3DateLabel(meta.remoteModified)}`,kind:"good"},{text:`${delta.length} changement(s) depuis le dernier contrôle`,kind:delta.length?"warn":"good"},{text:`${built.pendingNew} nouvelle(s) en attente`}]);v3SavedProjectAlerts(delta);
+    if(LAST_RESULT_PROFILE&&LAST_RESULT_ROWS?.length){setTimeout(()=>document.getElementById("radarForm")?.requestSubmit?.(),50)}
+  }catch(e){
+    window.AIDERADAR_V3_META={...window.AIDERADAR_V3_META,mode:"embedded-fallback",error:e?.message||String(e)};
+    v3SetState("warn","Mode de secours actif","La synchronisation en ligne n’a pas abouti. AideRadar continue avec la base embarquée et ne présente pas cette base comme vérifiée en temps réel.",[{text:"Base locale disponible",kind:"good"},{text:"Nouvel essai possible",kind:"warn"}]);
+  }finally{if(btn){btn.disabled=false;btn.textContent="↻ Actualiser les aides";}}
+}
+
+// Enrichit le statut documentaire sans prétendre vérifier la page web du financeur.
+const _v3SourceStatus=v2SourceStatus;
+v2SourceStatus=function(a,nowValue){const b=_v3SourceStatus(a,nowValue);if(a?._live?.modified){const d=v3DateLabel(a._live.modified);b.detail=`Donnée Aides-entreprises actualisée le ${d}. ${b.detail}`;}return b;};
+
+// Exports V3 : conserve une trace de la synchronisation utilisée pour le dossier.
+v2DossierExport=function(){
+  if(!LAST_RESULT_PROFILE)return;const snap=currentV2ProjectSnapshot();
+  const payload={app:"AideRadar",version:V3_VERSION,exported_at:new Date().toISOString(),data_sync:window.AIDERADAR_V3_META,...snap,roadmap:LAST_ROADMAP_TEXT,diagnostic:LAST_DIAGNOSTIC||null};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`aideradar-dossier-${snap.id}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+const _v3Snapshot=currentV2ProjectSnapshot;
+currentV2ProjectSnapshot=function(){const s=_v3Snapshot();s.data_sync={...window.AIDERADAR_V3_META};return s;};
+
+window.AideRadarV3={syncNow:v3SyncNow,parseCSV:v3ParseCSV,buildRemotePatch:v3BuildRemotePatch,getMeta:()=>({...window.AIDERADAR_V3_META})};
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("liveSyncBtn")?.addEventListener("click",()=>v3SyncNow(true));
+  setTimeout(()=>v3SyncNow(false),150);
+  if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 });
 </script>
 
