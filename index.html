@@ -207,10 +207,10 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span class="release-badge">V1.3</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V1.4 FINAL</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
-<p class="small" style="margin-top:-6px">Version 1.1 · base embarquée vérifiée · résultats à confirmer auprès de l’organisme instructeur. · résultats à confirmer auprès de l’organisme instructeur.</p>
+<p class="small" style="margin-top:-6px">Version 1.4 · moteur de précision renforcé · base embarquée · résultats à confirmer auprès de l’organisme instructeur.</p>
 
 <section class="card">
 <div class="ar-intro"><strong>🎯 Trouvez vos aides en moins d’une minute</strong><span><span class="ar-step">1</span>Entreprise &nbsp; <span class="ar-step">2</span>Projet &nbsp; <span class="ar-step">3</span>Aides à vérifier en priorité</span></div>
@@ -318,6 +318,10 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
     <option value="innovation">Innovation / R&D</option>
     <option value="cash">Trésorerie / financement</option>
   </select>
+
+  <label for="projectDetail">Décrivez ce que vous voulez financer</label>
+  <input id="projectDetail" placeholder="Ex. acheter un four et un pétrin, utilitaire d’occasion, créer un site e-commerce…" required>
+  <div class="field-help">Cette précision permet d’écarter les aides très spécialisées qui ne correspondent pas à votre dépense réelle.</div>
 
   <label for="budget">Budget du projet (€)</label>
   <input id="budget" type="number" min="0" step="100" inputmode="decimal" placeholder="Ex. 25000" required>
@@ -451,7 +455,7 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   </div>
 </section>
 </form>
-<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V31.3…</div>
+<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V1.4…</div>
 <button type="button" id="retryDbBtn" class="retry-db" hidden>↻ Réessayer le chargement</button>
 <div id="baseFreshness" class="small" style="margin-top:7px"></div>
 </section>
@@ -498,13 +502,13 @@ const PROJECT_TERMS={
  creation:["création","reprise","créateur","repreneur","créer","reprendre","installation"],
  invest:["investissement","matériel","équipement","machine","outillage","modernisation","productif"],
  local:["local","immobilier","aménagement","travaux","atelier","commerce"],
- vehicle:["véhicule","utilitaire","mobilité","transport","flotte"],
- hire:["embauche","recrutement","emploi","formation","apprenti","alternance"],
+ vehicle:["véhicule","utilitaire","flotte","automobile","camion"],
+ hire:["embauche","recrutement","formation","apprenti","alternance"],
  digital:["numérique","digital","logiciel","site internet","cyber","informatique"],
  energy:["énergie","transition écologique","chaleur","solaire","biomasse","géothermie","décarbonation"],
- export:["export","international","prospection","développement commercial"],
+ export:["export","international","prospection internationale","prospection export"],
  innovation:["innovation","r&d","recherche","brevet"],
- cash:["trésorerie","financement","prêt","garantie","fonds propres"]
+ cash:["trésorerie","besoin en fonds de roulement","bfr","structure financière","court terme","fonds propres"]
 };
 
 const PROFILE_TERMS={
@@ -1450,6 +1454,9 @@ function scoreAid(a,p){
  const specialized=specializedProjectGate(a,p);
  if(specialized.exclude) return null;
 
+ const purposeGate=specificPurposeGate(a,p);
+ if(purposeGate.exclude) return null;
+
  const employeeStructured=structuredEffectifGate(a,p);
  if(employeeStructured.exclude) return null;
 
@@ -1775,6 +1782,173 @@ function specializedProjectGate(a,p){
     if(r.rx.test(focused) && !r.projects.includes(p.project))
       return {exclude:true,reason:r.reason};
   }
+  return {exclude:false};
+}
+
+function projectEvidenceContext(p){
+  return norm([p.projectDetail||"",p.activityDetail||"",p.naf||""].join(" "));
+}
+
+function specificPurposeGate(a,p){
+  const title=norm(a.nom), obj=norm(a.objet), benef=norm(a.benef), cond=norm(a.conditions), ops=norm(a.operations);
+  const aid=[title,obj,benef,cond,ops].join(" ");
+  const detail=norm(p.projectDetail||"");
+  const user=projectEvidenceContext(p);
+
+  // Programmes dont la finalité est sans ambiguïté : ils ne doivent jamais être
+  // proposés à cause d'un mot générique présent dans la fiche.
+  if(/\b(horizon europe|cifre|france experimentation|france expérimentation)\b/.test(title) && p.project!=="innovation")
+    return {exclude:true,reason:"programme d’innovation/R&D non demandé"};
+  if(/\b(export|internation\w*|prospection internationale)\b/.test(title) && p.project!=="export")
+    return {exclude:true,reason:"dispositif export/international non demandé"};
+  if(/\b(pret d'honneur initiative|prêt d'honneur initiative|reseau entreprendre|réseau entreprendre|garantie creation|garantie création)\b/.test(title) && p.project!=="creation")
+    return {exclude:true,reason:"financement réservé à la création/reprise"};
+  if(/\b(avance remboursable.{0,45}creation|avance remboursable.{0,45}création|creation et la reprise|création et la reprise|transmission|cession d'entreprise|cession d’entreprise)\b/.test(title) && p.project!=="creation")
+    return {exclude:true,reason:"financement de création/reprise/transmission non demandé"};
+  if(/\b(cybiah|cybersecurite|cybersécurité)\b/.test(title) && p.project!=="digital")
+    return {exclude:true,reason:"dispositif cybersécurité non demandé"};
+  if(/\b(fasep)\b/.test(title) && p.project!=="export")
+    return {exclude:true,reason:"dispositif international/export non demandé"};
+  if(/\buimm\b/.test(title+" "+benef) && p.activity!=="industrie")
+    return {exclude:true,reason:"dispositif lié à la filière industrielle/UIMM"};
+  if(/\b(intelligence artificielle|\bia\b)\b/.test(title) && !["digital","innovation"].includes(p.project))
+    return {exclude:true,reason:"dispositif IA non demandé"};
+  if(/\b(sante publique|santé publique|technologies? de sante|technologies? de santé|innovations? en vie reelle|innovations? en vie réelle)\b/.test(title+" "+obj) && !/\b(sante|santé|medical|médical|patient|pharma|biotech)\b/.test(user))
+    return {exclude:true,reason:"dispositif santé non adapté à l’activité/projet"};
+  if(/\b(metiers? d'art|métiers? d'art|métiers? d’art|cima)\b/.test(title+" "+benef) && !/\b(metier d'art|métier d'art|metiers d'art|métiers d'art|patrimoine vivant|joaill|bijout|horlog|luthier|ébénist|ebenist)\b/.test(user))
+    return {exclude:true,reason:"dispositif réservé aux métiers d’art"};
+  if(/\b(pass pi|propriete intellectuelle|propriété intellectuelle|redevances? brevets?|brevets?)\b/.test(title) && !/\b(brevet|propriete intellectuelle|propriété intellectuelle|marque|dessin|modele|modèle|pi)\b/.test(detail))
+    return {exclude:true,reason:"propriété intellectuelle/brevet non décrit dans le projet"};
+  if(/\b(prime energie|prime énergie|coup de pouce chauffage|solaire|hydroelectrique|hydroélectrique|action climat|pacte entreprises - booster)\b/.test(title) && p.project!=="energy" && !/\b(energie|énergie|chauffage|solaire|climat|isolation|pompe a chaleur|pompe à chaleur|renovation energetique|rénovation énergétique)\b/.test(detail))
+    return {exclude:true,reason:"aide énergie/climat non demandée"};
+  if(/\b(acces internet|accès internet|haut debit|haut débit|fibre optique|raccordement.*fibre)\b/.test(title+" "+obj) && p.project!=="digital" && !/\b(internet|fibre|haut debit|haut débit|raccordement)\b/.test(detail))
+    return {exclude:true,reason:"aide de connectivité numérique non demandée"};
+  if(/\b(immobilier d'entreprise|immobilier d’entreprise|aide a l'immobilier|aide à l’immobilier)\b/.test(title) && p.project!=="local")
+    return {exclude:true,reason:"aide immobilière alors que le projet déclaré n’est pas immobilier"};
+
+  if(/\b(activite partielle|activité partielle|chomage partiel|chômage partiel|apld)\b/.test(title) && !/\b(activite partielle|activité partielle|chomage|chômage|apld)\b/.test(detail))
+    return {exclude:true,reason:"dispositif d’activité partielle non demandé"};
+  if(/\b(sport en entreprise|pratique du sport)\b/.test(title+" "+obj) && !/\b(sport|activite physique|activité physique)\b/.test(detail))
+    return {exclude:true,reason:"avantage lié au sport en entreprise non demandé"};
+  if(/\b(fprnm|fonds de prevention des risques naturels|fonds de prévention des risques naturels)\b/.test(title+" "+obj) && !/\b(risque|inondation|seisme|séisme|naturel)\b/.test(detail))
+    return {exclude:true,reason:"prévention des risques naturels non décrite"};
+  if(/\b(mobiliers? de terrasse)\b/.test(title+" "+obj) && !/\b(terrasse|mobilier exterieur|mobilier extérieur)\b/.test(detail))
+    return {exclude:true,reason:"mobilier de terrasse non décrit dans le projet"};
+  if(/\b(pret apport en capital|prêt apport en capital)\b/.test(title) && p.project!=="creation")
+    return {exclude:true,reason:"financement d’apport réservé à la création"};
+
+  if(/\b(ormat|recyclage|economie circulaire|économie circulaire)\b/.test(title+" "+obj) && !/\b(recycl|dechet|déchet|matiere|matière|circulaire)\b/.test(detail))
+    return {exclude:true,reason:"projet recyclage/économie circulaire non décrit"};
+  if(/\b(subvention prevention tpe|subvention prévention tpe)\b/.test(title) && !/\b(prevention|prévention|securite|sécurité|risque|amiante|captage|fumee|fumée|soudage|peinture|chute|chimique|bruit|ergonom)\b/.test(detail))
+    return {exclude:true,reason:"aide prévention TPE sans risque/dépense prévention décrit"};
+  if(/\b(entreprise adaptee|entreprise adaptée|entreprises adaptees|entreprises adaptées)\b/.test(title+" "+benef) && !/\b(handicap|entreprise adaptee|entreprise adaptée|insertion)\b/.test(detail))
+    return {exclude:true,reason:"dispositif réservé aux entreprises adaptées / handicap"};
+
+
+  // Aides prévention / risques : une dépense d'investissement générique ne suffit pas.
+  const prevention=[
+    [/\bamiante\b/,/\bamiante\b/],
+    [/\b(cabine de peinture|captage.{0,30}peinture)\b/,/\b(peinture|cabine|captage)\b/],
+    [/\b(captage reseau haute depression|captage réseau haute dépression)\b/,/\b(captage|aspiration|poussiere|poussière)\b/],
+    [/\b(prevention chutes|prévention chutes|chutes de hauteur)\b/,/\b(chute|hauteur|echafaud|échafaud)\b/],
+    [/\b(top btp)\b/,/\b(prevention|prévention|securite|sécurité|risque|chute|manutention)\b/]
+  ];
+  for(const [ar,ur] of prevention){ if(ar.test(title+" "+obj) && !ur.test(detail)) return {exclude:true,reason:"aide de prévention très spécialisée non décrite dans le projet"}; }
+
+  // Mobilité : préciser la technologie ou la dépense ciblée.
+  if(p.project==="vehicle"){
+    if(/\b(indemnite carburant|indemnité carburant|prime transport domicile|transport domicile-travail)\b/.test(title)) return {exclude:true,reason:"aide de frais de déplacement, pas d’achat de véhicule"};
+    if(/\b(action climat|climat|transition ecologique|transition écologique)\b/.test(title) && !/\b(electrique|électrique|hydrogene|hydrogène|faible emission|faible émission|climat|vert)\b/.test(detail)) return {exclude:true,reason:"financement mobilité verte non compatible avec le véhicule décrit"};
+    if(/\b(transitions collectives|prime transport domicile|transport domicile-travail|groupements? d'employeurs|groupements? d’employeurs)\b/.test(title+" "+obj))
+      return {exclude:true,reason:"mobilité des salariés ≠ achat de véhicule professionnel"};
+    const vehicleSpecific=[
+      [/\b(hydrogenes?|hydrogènes?)\b/,/\b(hydrogenes?|hydrogènes?)\b/],
+      [/\b(velos?|vélos?)\b/,/\b(velos?|vélos?)\b/],
+      [/\b(carburant|grands? rouleurs?)\b/,/\b(carburant|essence|diesel|gazole|rouleur)\b/],
+      [/\b(electrique|électrique|recharge)\b/,/\b(electrique|électrique|recharge)\b/]
+    ];
+    for(const [ar,ur] of vehicleSpecific){ if(ar.test(title+" "+obj) && !ur.test(detail)) return {exclude:true,reason:"technologie de mobilité spécifique non confirmée"}; }
+  }
+
+  // Numérique : IA, cyber, fibre et facturation sont des sous-projets distincts.
+  if(p.project==="digital"){
+    const digitalSpecific=[
+      [/\b(intelligence artificielle|\bia\b)\b/,/\b(intelligence artificielle|\bia\b|machine learning)\b/],
+      [/\b(cyber|cybersecurite|cybersécurité)\b/,/\b(cyber|cybersecurite|cybersécurité)\b/],
+      [/\b(fibre|haut debit|haut débit|raccordement)\b/,/\b(fibre|internet|haut debit|haut débit|raccordement)\b/],
+      [/\b(facturation electronique|facturation électronique)\b/,/\b(factur|facturation)\b/]
+    ];
+    for(const [ar,ur] of digitalSpecific){ if(ar.test(title+" "+obj) && !ur.test(detail)) return {exclude:true,reason:"sous-projet numérique spécifique non confirmé"}; }
+  }
+
+  if(p.project==="innovation"){
+    if(/\bcifre\b/.test(title) && !/\b(cifre|doctorat|docteur|these|thèse|laboratoire)\b/.test(detail)) return {exclude:true,reason:"CIFRE/doctorat non décrit"};
+    if(/\beurostars?\b/.test(title) && !/\b(eurostars?|collaborat|partenaire international|international)\b/.test(detail)) return {exclude:true,reason:"projet collaboratif Eurostars non décrit"};
+    if(/\bdemontrer la valeur des innovations en vie reelle|démontrer la valeur des innovations en vie réelle\b/.test(title) && !/\b(sante|santé|medical|médical|patient|prevention|prévention)\b/.test(user)) return {exclude:true,reason:"appel santé/innovation non aligné avec le projet"};
+    if(/\bdecarbonation de l.?industrie|décarbonation de l.?industrie\b/.test(title) && !/\b(decarbon|décarbon|energie|énergie|carbone|co2)\b/.test(detail)) return {exclude:true,reason:"décarbonation industrielle non décrite"};
+  }
+  if(p.project==="innovation" && /\bhorizon europe\b/.test(title)){
+    const clusters=[
+      [/\bcluster securite|cluster sécurité\b/,/\b(securite|sécurité|defense|défense|cyber)\b/],
+      [/\bcluster sante|cluster santé\b/,/\b(sante|santé|medical|médical|biotech|pharma)\b/],
+      [/\bcluster numerique|cluster numérique\b/,/\b(numerique|numérique|digital|logiciel|ia|informatique|electronique|électronique)\b/],
+      [/\bcluster alimentation|bioeconomie|bioéconomie|agriculture\b/,/\b(agri|aliment|bioeconomie|bioéconomie|ressource naturelle)\b/],
+      [/\bcluster climat|energie et mobilite|énergie et mobilité\b/,/\b(climat|energie|énergie|mobilite|mobilité|decarbon|décarbon)\b/]
+    ];
+    for(const [ar,ur] of clusters){ if(ar.test(title) && !ur.test(user)) return {exclude:true,reason:"cluster Horizon Europe non aligné avec le projet décrit"}; }
+  }
+
+  // Energie : ne pas confondre une intention générale avec une technologie précise.
+  if(p.project==="energy"){
+    const energySpecific=[
+      [/\b(solaire|photovoltaique|photovoltaïque)\b/,/\b(solaire|photovoltaique|photovoltaïque)\b/],
+      [/\b(hydroelectrique|hydroélectrique)\b/,/\b(hydro|hydroelectrique|hydroélectrique)\b/],
+      [/\b(biomasse|methanisation|méthanisation|biogaz)\b/,/\b(biomasse|methan|biogaz)\b/],
+      [/\b(biodiversite|biodiversité)\b/,/\b(biodiversite|biodiversité)\b/]
+    ];
+    for(const [ar,ur] of energySpecific){ if(ar.test(title+" "+obj) && !ur.test(detail)) return {exclude:true,reason:"technologie environnementale spécifique non confirmée"}; }
+    if(/\b(decarbonation des industries|décarbonation des industries)\b/.test(title) && p.activity!=="industrie")
+      return {exclude:true,reason:"dispositif réservé à un projet industriel"};
+  }
+
+  // Recrutement : un recrutement générique ne prouve pas les statuts très particuliers.
+  if(p.project==="hire"){
+    if(/\b(apprentis?|apprentissage)\b/.test(title+" "+obj) && !/\b(apprentis?|apprentissage|alternance)\b/.test(detail)) return {exclude:true,reason:"apprentissage non décrit"};
+    if(/\b(mixite des emplois|mixité des emplois|egalite professionnelle|égalité professionnelle|usure|sante au travail|santé au travail|fact )\b/.test(title+" "+obj) && !/\b(mixite|mixité|egalite|égalité|usure|sante au travail|santé au travail|prevention|prévention)\b/.test(detail)) return {exclude:true,reason:"dispositif RH/prévention spécifique non décrit"};
+    const hireSpecific=[
+      [/\b(cadres?|assistant\(e\)? export|assistant export)\b/,/\b(cadre|assistant export|export)\b/],
+      [/\b(entreprises? d'insertion|entreprises? d’insertion|ateliers? et chantiers? d'insertion|ateliers? et chantiers? d’insertion|groupements? d'employeurs|groupements? d’employeurs|contrat passerelle)\b/,/\b(insertion|chantier d'insertion|chantier d’insertion|contrat passerelle)\b/],
+      [/\b(transitions collectives|activite partielle|activité partielle|apld|chomage partiel|chômage partiel)\b/,/\b(reconversion|transition collective|activite partielle|activité partielle|apld|chomage|chômage)\b/],
+      [/\b(cheques vacances|chèques vacances|titres restaurants|heures supplementaires|heures supplémentaires|sapeurs-pompiers|reservistes|réservistes)\b/,/\b(cheque vacances|chèque vacances|titre restaurant|heures supplementaires|heures supplémentaires|pompier|reserviste|réserviste)\b/],
+      [/\b(aide individuelle a la formation|aide individuelle à la formation|\baif\b)\b/,/\b(formation|aif)\b/]
+    ];
+    for(const [ar,ur] of hireSpecific){ if(ar.test(title+" "+obj+" "+benef) && !ur.test(detail)) return {exclude:true,reason:"statut ou type de recrutement spécifique non confirmé"}; }
+  }
+
+  // Immobilier / tourisme : restaurant ≠ hébergement touristique.
+  if(p.project==="local"){
+    if(/\b(feder - tourisme|tourisme durable|transition touristique|territoires? de montagne)\b/.test(title+" "+obj) && !/\b(touris|hotel|hôtel|hebergement|hébergement|camping|patrimoine|culture|montagne)\b/.test(user))
+      return {exclude:true,reason:"dispositif touristique/culturel non décrit dans le projet"};
+    if(/\b(campings?|hebergements? touristiques?|hébergements? touristiques?|chambres d'hotes|chambres d’hôtes|meubles? de tourisme|meublés? de tourisme|hotels?|hôtels?|hotellerie|hôtellerie)\b/.test(title+" "+obj) &&
+       !/\b(hotel|hôtel|hotellerie|hôtellerie|camping|hebergement|hébergement|chambre d'hote|chambre d’hôte|gite|gîte)\b/.test(user))
+      return {exclude:true,reason:"aide d’hébergement touristique non adaptée à l’activité saisie"};
+    if(/\b(itineraires? touristiques?|itinéraires? touristiques?|fluvial|equestre|équestre)\b/.test(title+" "+obj) && !/\b(touris|itineraire|itinéraire|fluvial|velo|vélo|pedestre|pédestre|equestre|équestre)\b/.test(detail))
+      return {exclude:true,reason:"projet d’itinéraire/tourisme spécifique non décrit"};
+    if(/\b(fibre|haut debit|haut débit|raccordement)\b/.test(title+" "+obj) && !/\b(fibre|internet|raccordement|haut debit|haut débit)\b/.test(detail))
+      return {exclude:true,reason:"travaux de raccordement numérique non décrits"};
+    if(/\b(risques naturels|fprnm|fonds de prevention des risques naturels)\b/.test(title+" "+obj) && !/\b(risque|inondation|seisme|séisme|naturel)\b/.test(detail))
+      return {exclude:true,reason:"prévention des risques naturels non décrite"};
+  }
+
+  // Trésorerie : éliminer les garanties thématiques sans projet correspondant.
+  if(p.project==="cash" && /\b(vert|climat|transition ecologique|transition écologique|internation\w*|export|innovation|carburant|facturation electronique|facturation électronique|transmission)\b/.test(title) &&
+     !/\b(vert|climat|ecolog|écolog|international|export|innovation|carburant|factur|transmission)\b/.test(detail))
+    return {exclude:true,reason:"garantie thématique sans projet correspondant"};
+
+  // Si une aide mentionne explicitement le handicap/AGEFIPH, exiger que le projet le dise.
+  if(/\b(agefiph|handicap|travailleur handicape|travailleur handicapé)\b/.test(title+" "+benef) && !/\b(handicap|agefiph)\b/.test(detail))
+    return {exclude:true,reason:"condition handicap non renseignée dans le projet"};
+
   return {exclude:false};
 }
 
@@ -2938,8 +3112,8 @@ function buildRoadmap(rows,p){
   };
   const top=[...enriched].sort((a,b)=>
     (priorityWeight[a.decision.priority]-priorityWeight[b.decision.priority]) ||
-    (actionScore(b)-actionScore(a)) ||
-    (b.decision.readiness-a.decision.readiness)
+    (b.decision.readiness-a.decision.readiness) ||
+    (actionScore(b)-actionScore(a))
   ).slice(0,3);
   const grantTotal=enriched.reduce((s,x)=>s+(prudentGrantEligible(x,p)?(x.decision.exactGrant||0):0),0);
   const potentialGrantTotal=enriched.reduce((s,x)=>s+(x.decision.exactGrant||0),0);
@@ -2955,7 +3129,7 @@ function buildRoadmapText(rows,p){
   const road=buildRoadmap(rows,p);
   const lines=[
     "AideRadar — Plan d’action",
-    `Projet : ${p.activityDetail||p.activity} · ${p.dept} · budget ${euro(p.budget)}`,
+    `Projet : ${p.activityDetail||p.activity} · ${p.dept} · ${p.projectDetail||projectLabel(p)} · budget ${euro(p.budget)}`,
     ""
   ];
   road.top.forEach((x,i)=>{
@@ -3080,6 +3254,7 @@ function wizardValidation(draft,step){
   }
   if(step===2){
     if(!draft.project) errors.push({field:"project",message:"Choisis l’objectif principal du projet."});
+    if(String(draft.projectDetail||"").trim().length<4) errors.push({field:"projectDetail",message:"Décris en quelques mots ce que tu veux réellement financer."});
     if(draft.budgetRaw===undefined || draft.budgetRaw===null || String(draft.budgetRaw).trim()==="")
       errors.push({field:"budget",message:"Indique le budget du projet, même s’il est de 0 €."});
     else if(!Number.isFinite(Number(draft.budgetRaw)) || Number(draft.budgetRaw)<0)
@@ -3116,6 +3291,7 @@ function reviewModel(d){
     company:[d.companyStatus||"standard",d.companyAge||"unknown",d.employees?`${d.employees} salarié(s)`:""].filter(Boolean).join(" · "),
     location:[d.dept?`Département ${normalizeDepartment(d.dept)}`:"",d.commune||"",d.postalCode||""].filter(Boolean).join(" · "),
     project:WIZARD_PROJECT_LABELS[d.project]||d.project||"—",
+    projectDetail:d.projectDetail||"—",
     budget:Number.isFinite(Number(d.budgetRaw))?Number(d.budgetRaw):0,
     precisionCount:optionalPrecisionCount(d)
   };
@@ -3140,6 +3316,7 @@ function wizardDraftFromForm(){
     employees:document.getElementById("employees")?.value||"",
     dept:normalizeDepartment(document.getElementById("dept")?.value||""),
     project:document.getElementById("project")?.value||"",
+    projectDetail:(document.getElementById("projectDetail")?.value||"").trim(),
     budgetRaw:document.getElementById("budget")?.value??"",
     naf:(document.getElementById("naf")?.value||"").trim(),
     turnover:Number(document.getElementById("turnover")?.value||0),
@@ -3177,6 +3354,7 @@ function renderProfileReview(){
     <div class="review-row"><span>Entreprise</span><strong>${esc(m.company)}</strong></div>
     <div class="review-row"><span>Localisation</span><strong>${esc(m.location||"Département "+normalizeDepartment(d.dept))}</strong></div>
     <div class="review-row"><span>Projet</span><strong>${esc(m.project)}</strong></div>
+    <div class="review-row"><span>Détail</span><strong>${esc(m.projectDetail)}</strong></div>
     <div class="review-row"><span>Budget</span><strong>${euro(m.budget)}</strong></div>
     <div class="review-precision">${m.precisionCount?`${m.precisionCount} précision(s) facultative(s) ajoutée(s) pour améliorer le filtrage.`:"Le profil essentiel suffit pour lancer l’analyse. Tu peux encore ajouter des précisions si besoin."}</div>`;
 }
@@ -3224,8 +3402,8 @@ let LAST_DIAGNOSTIC=null;
 function buildDiagnostic(profile, rows, territorialCount, scoredCount){
   return {
     app:"AideRadar",
-    version:"1.2.0",
-    engine:"aideradar-v1.3-release-v31.3-official-rules",
+    version:"1.4.0",
+    engine:"aideradar-v1.4-final-purpose-evidence",
     generated_at:new Date().toISOString(),
     profile:{
       activity:profile.activity,
@@ -3246,6 +3424,7 @@ function buildDiagnostic(profile, rows, territorialCount, scoredCount){
       longitude:profile.longitude||0,
       employees:profile.employees,
       project:profile.project,
+      projectDetail:profile.projectDetail||"",
       budget:profile.budget,
       turnover:profile.turnover||0,
       ownerAge:profile.ownerAge||0,
@@ -3453,7 +3632,7 @@ async function loadDB(){
  const retry=document.getElementById("retryDbBtn");
  if(btn){btn.disabled=true;btn.textContent="Chargement de la base…";}
  if(retry) retry.hidden=true;
- if(status) status.textContent="Chargement de la base intégrée V31.3…";
+ if(status) status.textContent="Chargement de la base intégrée V1.4…";
  try{
   const j=AIDERADAR_EMBEDDED_DB;
   DB=Array.isArray(j)?j:(j.aides||[]);
@@ -3585,7 +3764,7 @@ if(postalInput) postalInput.addEventListener("change",()=>setTimeout(geocodeFull
 
 const PROFILE_STORAGE_KEY="aideradar:v20:profile";
 function currentProfileFormState(){
- const ids=["activity","activityDetail","naf","companyStatus","companyAge","dept","postalCode","communeManual","streetAddress","employees","project","budget","turnover","ownerAge","zoneQpv","zoneFrr","zoneAfr","registeredRM","registeredRCS","bankFinancing"];
+ const ids=["activity","activityDetail","projectDetail","naf","companyStatus","companyAge","dept","postalCode","communeManual","streetAddress","employees","project","budget","turnover","ownerAge","zoneQpv","zoneFrr","zoneAfr","registeredRM","registeredRCS","bankFinancing"];
  const obj={};
  ids.forEach(id=>{const el=document.getElementById(id); if(el) obj[id]=el.value;});
  ["franchise","jobSeeker"].forEach(id=>{const el=document.getElementById(id); if(el) obj[id]=Boolean(el.checked);});
@@ -3625,7 +3804,7 @@ document.getElementById("radarForm").addEventListener("submit",async function(e)
  const submit=document.getElementById("submitBtn");
  const allErrors=[...wizardValidation(wizardDraftFromForm(),1),...wizardValidation(wizardDraftFromForm(),2)];
  if(allErrors.length){
-   const targetStep=["project","budget","postalCode","ownerAge"].includes(allErrors[0].field)?2:1;
+   const targetStep=["project","projectDetail","budget","postalCode","ownerAge"].includes(allErrors[0].field)?2:1;
    setWizardStep(targetStep,{skipValidation:true});
    showWizardError(allErrors);
    return;
@@ -3661,6 +3840,7 @@ document.getElementById("radarForm").addEventListener("submit",async function(e)
   longitude:Number(document.getElementById("longitude")?.value||0),
   employees:document.getElementById("employees").value,
   project:document.getElementById("project").value,
+  projectDetail:(document.getElementById("projectDetail")?.value||"").trim(),
   budget:Number(document.getElementById("budget").value||0),
   turnover:Number(document.getElementById("turnover")?.value||0),
   ownerAge:Number(document.getElementById("ownerAge")?.value||0),
