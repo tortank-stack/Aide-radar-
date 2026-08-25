@@ -7,7 +7,6 @@ html = (ROOT / "index.html").read_text(encoding="utf-8")
 m = re.search(r"<script>(.*)</script>", html, re.S)
 if not m:
     raise SystemExit("No JS block found")
-
 prefix = m.group(1).split("let LAST_DIAGNOSTIC=null;")[0]
 data = json.loads((ROOT / "aides_v15.json").read_text(encoding="utf-8"))
 aids = data["aides"] if isinstance(data, dict) else data
@@ -53,26 +52,21 @@ function runProfile(p){
  eligible.sort((x,y)=>confidenceScore(y.a,y.r,p)-confidenceScore(x.a,x.r,p)||y.r.score-x.r.score);
  return dedupeRankedRows(eligible,p).slice(0,12).map(x=>({
    name:clean(x.a.nom),
-   confidence:confidenceScore(x.a,x.r,p)
+   confidence:confidenceScore(x.a,x.r,p),
+   reasons:x.r.reasons
  }));
 }
-const out={};
-for(const [n,p] of PROFILES) out[n]=runProfile(p);
+const out={}; for(const [n,p] of PROFILES) out[n]=runProfile(p);
 console.log(JSON.stringify(out));
 '''
 
 with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
-    f.write(runner)
-    jsfile=f.name
-
+    f.write(runner); jsfile=f.name
 res=subprocess.run(["node",jsfile],capture_output=True,text=True)
 if res.returncode:
-    print(res.stderr,file=sys.stderr)
-    raise SystemExit(1)
-
+    print(res.stderr,file=sys.stderr); raise SystemExit(1)
 out=json.loads(res.stdout)
 top2=[x["name"] for x in out["plomberie_creation"][:2]]
-
 checks=[
  ("Top 2 plomberie cohérent", any("Initiative 89" in n for n in top2) and any("Avance remboursable" in n for n in top2)),
  ("AIF absente plomberie", all("Aide individuelle" not in x["name"] for x in out["plomberie_creation"])),
@@ -81,11 +75,46 @@ checks=[
  ("Cinéma absent restaurant", all("cinéma" not in x["name"].lower() for x in out["restaurant_digital"])),
  ("Presse absente boulangerie", all("presse" not in x["name"].lower() for x in out["boulangerie_invest"]))
 ]
+for label,ok in checks: print(("OK" if ok else "FAIL"),"-",label)
+if not all(ok for _,ok in checks): raise SystemExit(2)
 
-for label, ok in checks:
-    print(("OK" if ok else "FAIL"), "-", label)
+# Contract tests: official structured fields must influence the engine before free-text guesses.
+synthetic = prefix + r'''
+const P={activity:"btp",activityDetail:"Plomberie",naf:"",companyStatus:"standard",companyAge:"lt1",dept:"89",postalCode:"89130",commune:"Toucy",communeCode:"89419",epciCode:"",streetAddress:"",latitude:0,longitude:0,employees:"1-4",project:"creation",budget:25000,turnover:0,ownerAge:29,franchise:false,jobSeeker:false};
+const base={id_aid:"synthetic",nom:"Soutien économique",benef:"PME",objet:"Accompagner l'entreprise",conditions:"",montant:"Subvention",operations:"",source:"https://example.test",deps:["89"],status:1,effectif:"-10",profils:["Artisanat - Bâtiment"],projets:["Financer le lancement de son entreprise"],natures:["Subvention"],territoires:["Yonne 89"],_quality:{score:100,issues:[]}};
+const r1=scoreAid(base,P);
+const r2=scoreAid({...base,id_aid:"expired",fin:"2020-01-01"},P);
+const r3=scoreAid({...base,id_aid:"disabled",status:2},P);
+const r4=scoreAid({...base,id_aid:"wrong",projets:["Transition énergétique"]},P);
+console.log(JSON.stringify({r1,r2,r3,r4}));
+'''
+with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
+    f.write(synthetic); synfile=f.name
+res=subprocess.run(["node",synfile],capture_output=True,text=True)
+if res.returncode:
+    print(res.stderr,file=sys.stderr); raise SystemExit(1)
+s=json.loads(res.stdout)
+contract=[
+ ("Projet officiel structuré accepté", s["r1"] is not None),
+ ("Preuve projet officielle ajoutée", s["r1"] is not None and any("indexation officielle" in x for x in s["r1"].get("reasons",[]))),
+ ("Aide expirée exclue", s["r2"] is None),
+ ("Aide désactivée exclue", s["r3"] is None),
+ ("Projet officiel incompatible exclu", s["r4"] is None)
+]
+for label,ok in contract: print(("OK" if ok else "FAIL"),"-",label)
+if not all(ok for _,ok in contract): raise SystemExit(3)
+print(f"All {len(checks)+len(contract)} regression/contract checks passed.")
 
-if not all(ok for _,ok in checks):
-    raise SystemExit(2)
-
-print(f"All {len(checks)} regression checks passed.")
+# Updater parsing contracts: catch schema regressions before committing a rebuilt DB.
+import importlib.util
+spec=importlib.util.spec_from_file_location("aideradar_updater", ROOT / "update_aides.py")
+upd=importlib.util.module_from_spec(spec); spec.loader.exec_module(upd)
+updater_checks=[
+ ("parse_multi séparateurs", upd.parse_multi("Création; Développement") == ["Création","Développement"]),
+ ("normalize_date FR", upd.normalize_date("31/12/2026") == "2026-12-31"),
+ ("parse status", upd.parse_int("2") == 2),
+ ("parse département", upd.parse_deps("Yonne (89)") == ["89"]),
+]
+for label,ok in updater_checks: print(("OK" if ok else "FAIL"),"-",label)
+if not all(ok for _,ok in updater_checks): raise SystemExit(4)
+print(f"Updater contracts: {len(updater_checks)} checks passed.")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AideRadar V22.0</title>
+<title>AideRadar V23.0</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -38,7 +38,7 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V22.0</span></div>
+<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V23.0</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Le moteur V16 applique les restrictions métier, projet et bénéficiaire avant le classement, puis distingue les critères confirmés de ceux restant à vérifier.</p>
 
@@ -423,6 +423,53 @@ function extractMinimumBudget(a){
 
 
 
+
+function arrNorm(v){
+  if(!Array.isArray(v)) return [];
+  return v.map(x=>norm(x)).filter(Boolean);
+}
+
+function structuredProjectSignal(a,p){
+  const vals=arrNorm(a.projets);
+  if(!vals.length) return {known:false,hit:false,universal:false,hits:[]};
+  const terms=(PROJECT_TERMS[p.project]||[]).map(norm);
+  const universal=vals.some(v=>/\b(toutes? les aides|tous projets|financement global|developpement global|développement global)\b/.test(v));
+  const hits=vals.filter(v=>terms.some(t=>v.includes(t)||t.includes(v)));
+  return {known:true,hit:hits.length>0,universal,hits};
+}
+
+function structuredStatusGate(a){
+  if(a.status===undefined || a.status===null || a.status==='') return {exclude:false};
+  const s=Number(a.status);
+  if(s===0) return {exclude:true,reason:'aide supprimée dans la base officielle'};
+  if(s===2) return {exclude:true,reason:'aide désactivée / en cours de rédaction'};
+  return {exclude:false};
+}
+
+function structuredAgeGate(a,p){
+  const raw=norm(a.age_entreprise||'');
+  if(!raw) return {exclude:false};
+  const notes=[];
+  if(/\b(moins de 1 an|moins d'un an|moins de 12 mois)\b/.test(raw) && p.companyAge!=='unknown' && p.companyAge!=='lt1')
+    return {exclude:true,reason:'ancienneté structurée : entreprise de moins d’un an requise'};
+  if(/\b(moins de 3 ans|moins de trois ans|moins de 36 mois)\b/.test(raw) && p.companyAge!=='unknown' && !['lt1','1to3'].includes(p.companyAge))
+    return {exclude:true,reason:'ancienneté structurée : entreprise de moins de 3 ans requise'};
+  if(/\b(au moins 3 ans|plus de 3 ans|3 ans et plus)\b/.test(raw) && p.companyAge!=='unknown' && p.companyAge!=='gt3')
+    return {exclude:true,reason:'ancienneté structurée : au moins 3 ans requis'};
+  if(p.companyAge==='unknown') notes.push('ancienneté structurée à confirmer');
+  return {exclude:false,notes};
+}
+
+function structuredProfileCompatibility(a,p){
+  const vals=arrNorm(a.profils);
+  if(!vals.length) return {known:false,match:false,broad:false};
+  const broad=vals.some(v=>/\b(pme tous secteurs|tous secteurs|entreprises tous secteurs|artisanat)\b/.test(v));
+  const expected=(PROFILE_TERMS[p.activity]||[]).map(norm);
+  const detail=norm(p.activityDetail||'');
+  const words=detail.split(/\s+/).filter(x=>x.length>=4);
+  const match=vals.some(v=>expected.some(e=>v===e||v.includes(e)||e.includes(v)) || words.some(w=>v.includes(w)));
+  return {known:true,match,broad,values:vals};
+}
 function beneficiaryGate(a,p){
   const name = norm(a.nom);
   const benef = norm(a.benef);
@@ -574,7 +621,12 @@ function sectorListGate(a,p){
 
 function projectIntentGate(a,p){
   const title=norm(a.nom), obj=norm(a.objet), benef=norm(a.benef);
-  const focused=[title,obj,benef].join(" ");
+  const structured=structuredProjectSignal(a,p);
+  const focused=[title,obj,benef,arrNorm(a.projets).join(" ")].join(" ");
+
+  if(structured.hit) return {exclude:false};
+  if(structured.known && !structured.universal && ["creation","digital","energy"].includes(p.project))
+    return {exclude:true,reason:"catégorie de projet officielle incompatible"};
 
   if(p.project==="creation"){
     const creation=/\b(creation|reprise|createur|repreneur|premiere installation|installation d'entreprise)\b/.test(focused);
@@ -782,7 +834,9 @@ function confidenceScore(a,r,p){
   if(q.issues?.includes("source_missing")) c-=10;
   if(q.issues?.includes("territorial_scope_unclear")) c-=12;
 
-  // Strong local proof matters.
+  // Structured official indexation and strong local proof matter.
+  if(structuredProjectSignal(a,p).hit) c+=6;
+  if(structuredProfileCompatibility(a,p).match) c+=4;
   if((a.deps||[]).includes(p.dept) && !(a.deps||[]).includes("ALL")) c+=8;
   if(p.project==="creation" && (a.deps||[]).includes(p.dept) &&
      /\b(initiative|creation|reprise|pret d'honneur)\b/.test(norm([a.nom,a.objet,a.benef].join(" ")))) c+=6;
@@ -818,6 +872,13 @@ function scoreAid(a,p){
  let score=0,reasons=[],penalties=[];
 
  // 0. Restrictions obligatoires du bénéficiaire
+ const statusGate=structuredStatusGate(a);
+ if(statusGate.exclude) return null;
+
+ const ageStructured=structuredAgeGate(a,p);
+ if(ageStructured.exclude) return null;
+ if(Array.isArray(ageStructured.notes) && ageStructured.notes.length) penalties.push.apply(penalties,ageStructured.notes);
+
  const gate=beneficiaryGate(a,p);
  if(gate.exclude) return null;
  if(Array.isArray(gate && gate.notes) && gate.notes.length) penalties.push.apply(penalties, gate.notes);
@@ -863,9 +924,13 @@ function scoreAid(a,p){
  // 2. Projet
  const projectHay=norm([a.nom,a.objet,a.operations,(a.projets||[]).join(" ")].join(" "));
  const hits=(PROJECT_TERMS[p.project]||[]).filter(t=>projectHay.includes(norm(t)));
- if(!hits.length) return null;
+ const structuredProject=structuredProjectSignal(a,p);
+ if(!hits.length && !structuredProject.hit) return null;
  score+=Math.min(40,22+hits.length*5);
- reasons.push("projet correspondant");
+ if(structuredProject.hit){
+   score+=10;
+   reasons.push("projet confirmé par l’indexation officielle");
+ }else reasons.push("projet correspondant");
 
  // Financements : un montant minimum supérieur au budget déclaré n'est pas cohérent.
  const financingTxt=norm([a.nom,a.montant].join(" "));
@@ -884,9 +949,13 @@ function scoreAid(a,p){
 
  // 4. Secteur général
  const profs=(a.profils||[]).map(norm);
- const expected=(PROFILE_TERMS[p.activity]||[]).map(norm);
- if(profs.some(x=>expected.includes(x))){score+=14;reasons.push("secteur compatible")}
- else if(profs.includes("pme tous secteurs")){score+=10;reasons.push("ouvert aux PME tous secteurs")}
+ const profileSignal=structuredProfileCompatibility(a,p);
+ if(profileSignal.match){score+=18;reasons.push("profil sectoriel officiel compatible")}
+ else if(profileSignal.broad){score+=10;reasons.push("profil officiel ouvert largement")}
+ else {
+   const expected=(PROFILE_TERMS[p.activity]||[]).map(norm);
+   if(profs.some(x=>expected.includes(x))){score+=14;reasons.push("secteur compatible")}
+ }
 
  // 5. Activité précise
  const words=norm(p.activityDetail).split(/\s+/).filter(w=>w.length>=4);
@@ -1004,7 +1073,7 @@ function profileContext(p){
 const DEPARTMENT_NAMES={"01": ["ain"], "02": ["aisne"], "03": ["allier"], "04": ["alpes de haute provence"], "05": ["hautes alpes"], "06": ["alpes maritimes"], "07": ["ardeche"], "08": ["ardennes"], "09": ["ariege"], "10": ["aube"], "11": ["aude"], "12": ["aveyron"], "13": ["bouches du rhone"], "14": ["calvados"], "15": ["cantal"], "16": ["charente"], "17": ["charente maritime"], "18": ["cher"], "19": ["correze"], "2A": ["corse du sud"], "2B": ["haute corse"], "21": ["cote d'or"], "22": ["cotes d'armor"], "23": ["creuse"], "24": ["dordogne"], "25": ["doubs"], "26": ["drome"], "27": ["eure"], "28": ["eure et loir"], "29": ["finistere"], "30": ["gard"], "31": ["haute garonne"], "32": ["gers"], "33": ["gironde"], "34": ["herault"], "35": ["ille et vilaine"], "36": ["indre"], "37": ["indre et loire"], "38": ["isere"], "39": ["jura"], "40": ["landes"], "41": ["loir et cher"], "42": ["loire"], "43": ["haute loire"], "44": ["loire atlantique"], "45": ["loiret"], "46": ["lot"], "47": ["lot et garonne"], "48": ["lozere"], "49": ["maine et loire"], "50": ["manche"], "51": ["marne"], "52": ["haute marne"], "53": ["mayenne"], "54": ["meurthe et moselle"], "55": ["meuse"], "56": ["morbihan"], "57": ["moselle"], "58": ["nievre"], "59": ["nord"], "60": ["oise"], "61": ["orne"], "62": ["pas de calais"], "63": ["puy de dome"], "64": ["pyrenees atlantiques"], "65": ["hautes pyrenees"], "66": ["pyrenees orientales"], "67": ["bas rhin"], "68": ["haut rhin"], "69": ["rhone"], "70": ["haute saone"], "71": ["saone et loire"], "72": ["sarthe"], "73": ["savoie"], "74": ["haute savoie"], "75": ["paris"], "76": ["seine maritime"], "77": ["seine et marne"], "78": ["yvelines"], "79": ["deux sevres"], "80": ["somme"], "81": ["tarn"], "82": ["tarn et garonne"], "83": ["var"], "84": ["vaucluse"], "85": ["vendee"], "86": ["vienne"], "87": ["haute vienne"], "88": ["vosges"], "89": ["yonne"], "90": ["territoire de belfort"], "91": ["essonne"], "92": ["hauts de seine"], "93": ["seine saint denis"], "94": ["val de marne"], "95": ["val d'oise"], "971": ["guadeloupe"], "972": ["martinique"], "973": ["guyane"], "974": ["reunion"], "976": ["mayotte"]};
 
 function localityEvidence(a,p){
- const txt=norm([a.nom,a.benef,a.objet,a.conditions].join(" "));
+ const txt=norm([a.nom,a.benef,a.objet,a.conditions,(a.territoires||[]).join(" ")].join(" "));
  const vals=[[p.commune,"commune"],[p.postalCode,"code postal"],[p.communeCode,"code INSEE"],[p.epciCode,"EPCI"]];
  for(const [v,type] of vals){
    const n=norm(v||"");
@@ -1018,7 +1087,7 @@ function preciseLocalityGate(a,p){
   const benef=norm(a.benef);
   const obj=norm(a.objet);
   const cond=norm(a.conditions);
-  const focused=[title,benef,obj,cond].join(" ");
+  const focused=[title,benef,obj,cond,arrNorm(a.territoires).join(" ")].join(" ");
 
   // Réseaux / dispositifs locaux très explicites.
   const localNames=[
@@ -1498,8 +1567,8 @@ let LAST_DIAGNOSTIC=null;
 function buildDiagnostic(profile, rows, territorialCount, scoredCount){
   return {
     app:"AideRadar",
-    version:"22.0",
-    engine:"eligibility-first-v5.5-autodata-guarded",
+    version:"23.0",
+    engine:"eligibility-first-v6.0-structured-index",
     generated_at:new Date().toISOString(),
     profile:{
       activity:profile.activity,
@@ -1821,7 +1890,8 @@ document.getElementById("radarForm").addEventListener("submit",function(e){
    return `<article class="result">
     <span class="badge ${cls}">${lab}</span>
     <h3>${esc(clean(a.nom))}</h3>
-    <div class="meta">📍 ${esc(a.geo||((a.deps||[]).includes("ALL")?"Aide nationale":"Aide territoriale"))}${a.fin?` · ⏳ fin : ${esc(a.fin)}`:""}</div>
+    <div class="meta">📍 ${esc(a.geo||((a.deps||[]).includes("ALL")?"Aide nationale":"Aide territoriale"))}${a.fin?` · ⏳ fin : ${esc(a.fin)}`:""}${(a.natures||[]).length?` · ${esc((a.natures||[]).slice(0,2).join(" / "))}`:""}</div>
+    ${(a.financeurs||[]).length?`<div class="meta">🏛️ ${esc((a.financeurs||[]).slice(0,3).join(" · "))}</div>`:""}
     ${eligibilityHtml(a,r,p)}
     ${extractMinimumBudget(a)?`<div class="box"><strong>Budget minimum détecté</strong><br>${extractMinimumBudget(a).toLocaleString("fr-FR")} €</div>`:""}
     ${estimateAidAmount(a,p.budget)?(()=>{

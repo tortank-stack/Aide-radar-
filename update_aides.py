@@ -29,7 +29,24 @@ ALIASES = {
  "source":["complements_sources","aid_url","url_aide","url aide","url","lien","source","url source","site web","website"],
  "deps":["departements","départements","departement","département","territoire","territoires","zone geographique","zone géographique"],
  "couverture_geo":["couverture_geo","couverture geo","id couverture geo"],
- "organisme":["organisme","financeur","operateur","opérateur","contact","aid_financeur","nom_financeur"]
+ "organisme":["organisme","financeur","operateur","opérateur","contact","aid_financeur","nom_financeur"],
+ "validation":["aid_validation"],
+ "domaine":["id_domaine"],
+ "handicapes":["handicapes"],
+ "femmes":["femmes"],
+ "seniors":["seniors"],
+ "jeunes":["jeunes"],
+ "date_fin":["date_fin"],
+ "status":["status"],
+ "effectif":["effectif"],
+ "duree_projet":["duree_projet"],
+ "age_entreprise":["age_entreprise"],
+ "projets":["projets"],
+ "profils":["profils"],
+ "natures":["natures"],
+ "territoires":["territoires"],
+ "contacts":["contacts"],
+ "financeurs":["financeurs"]
 }
 
 def pick(row, name):
@@ -103,6 +120,66 @@ def previous_match(row, by_id, by_name):
     return by_name.get(norm_key(pick(row,"nom")), {})
 
 
+def parse_multi(raw):
+    s=(raw or "").strip()
+    if not s:
+        return []
+    try:
+        obj=json.loads(s)
+        if isinstance(obj,list):
+            return [str(x).strip() for x in obj if str(x).strip()]
+        if isinstance(obj,dict):
+            return [str(v).strip() for v in obj.values() if str(v).strip()]
+        if isinstance(obj,str):
+            s=obj
+    except Exception:
+        pass
+    parts=re.split(r"\s*(?:\||;|\n|\r)+\s*",s)
+    if len(parts)==1 and s.count(",")>=1 and len(s)<1500:
+        comma=[x.strip() for x in s.split(",") if x.strip()]
+        if 1 < len(comma) <= 40:
+            parts=comma
+    out=[]; seen=set()
+    for x in parts:
+        x=x.strip(" []\"'")
+        if not x: continue
+        k=norm_key(x)
+        if k not in seen:
+            seen.add(k); out.append(x)
+    return out
+
+def parse_bool(raw):
+    s=norm_key(raw)
+    return s in {"1","true","vrai","oui","yes","x"}
+
+def parse_int(raw):
+    try: return int(float(str(raw).strip()))
+    except Exception: return None
+
+def normalize_date(raw):
+    s=(raw or "").strip()
+    if not s: return ""
+    for rx,order in [
+        (r"^(\d{4})-(\d{1,2})-(\d{1,2})", "ymd"),
+        (r"^(\d{1,2})/(\d{1,2})/(\d{4})", "dmy"),
+        (r"^(\d{1,2})-(\d{1,2})-(\d{4})", "dmy")
+    ]:
+        m=re.search(rx,s)
+        if m:
+            if order=="ymd": y,mo,d=map(int,m.groups())
+            else: d,mo,y=map(int,m.groups())
+            return f"{y:04d}-{mo:02d}-{d:02d}"
+    return s[:10] if len(s)>=10 else s
+
+def row_quality(row):
+    issues=[]; score=100
+    if not row.get("source"): issues.append("source_missing"); score-=7
+    if not row.get("benef"): issues.append("beneficiaries_missing"); score-=8
+    if not row.get("objet"): issues.append("object_missing"); score-=8
+    if row.get("deps")==["ALL"] and row.get("couverture_geo") and row.get("territoires"):
+        issues.append("territorial_scope_unclear"); score-=6
+    return {"issues":issues,"score":max(0,score)}
+
 def parse_deps(raw):
     t=(raw or "").strip()
     if not t: return ["ALL"]
@@ -165,13 +242,16 @@ def main():
 
         organisme=pick(r,"organisme") or (prev.get("organisme") or "")
 
-        parsed_deps=parse_deps(pick(r,"deps"))
-        # Do not destroy a previously precise local scope just because the stock
-        # export only exposes an opaque couverture_geo identifier.
+        territoires=parse_multi(pick(r,"territoires"))
+        parsed_deps=parse_deps(" ".join(territoires) or pick(r,"deps"))
         if parsed_deps==["ALL"] and prev.get("deps") and prev.get("deps")!=["ALL"]:
             parsed_deps=prev.get("deps")
 
-        rows.append({
+        status=parse_int(pick(r,"status"))
+        if status in {0,2}:
+            continue
+
+        row={
             "id_aid":pick(r,"id"),
             "nom":nom,
             "benef":pick(r,"benef"),
@@ -182,8 +262,29 @@ def main():
             "source":source,
             "organisme":organisme,
             "couverture_geo":couverture,
-            "deps":parsed_deps
-        })
+            "deps":parsed_deps,
+            "geo":"aide nationale" if parsed_deps==["ALL"] else "aide territoriale",
+            "local":parsed_deps!=["ALL"],
+            "validation":normalize_date(pick(r,"validation")),
+            "id_domaine":pick(r,"domaine"),
+            "handicapes":parse_bool(pick(r,"handicapes")),
+            "femmes":parse_bool(pick(r,"femmes")),
+            "seniors":parse_bool(pick(r,"seniors")),
+            "jeunes":parse_bool(pick(r,"jeunes")),
+            "fin":normalize_date(pick(r,"date_fin")),
+            "status":status if status is not None else 1,
+            "effectif":pick(r,"effectif") or (prev.get("effectif") or ""),
+            "duree_projet":pick(r,"duree_projet"),
+            "age_entreprise":pick(r,"age_entreprise"),
+            "projets":parse_multi(pick(r,"projets")) or (prev.get("projets") or []),
+            "profils":parse_multi(pick(r,"profils")) or (prev.get("profils") or []),
+            "natures":parse_multi(pick(r,"natures")) or (prev.get("natures") or []),
+            "territoires":territoires or (prev.get("territoires") or []),
+            "contacts":parse_multi(pick(r,"contacts")),
+            "financeurs":parse_multi(pick(r,"financeurs"))
+        }
+        row["_quality"]=row_quality(row)
+        rows.append(row)
 
     if len(rows) < MIN_ROWS:
         raise RuntimeError(f"Contrôle qualité bloquant : seulement {len(rows)} aides extraites (< {MIN_ROWS}). Ancienne base conservée.")
@@ -193,6 +294,8 @@ def main():
     missing_source=sum(not x["source"] for x in rows)
     missing_benef=sum(not x["benef"] for x in rows)
     missing_objet=sum(not x["objet"] for x in rows)
+    missing_projets=sum(not x.get("projets") for x in rows)
+    missing_profils=sum(not x.get("profils") for x in rows)
 
     print(
         "Qualité mapping :",
@@ -271,7 +374,10 @@ def main():
             "missing_beneficiaries":missing_benef,
             "missing_beneficiaries_ratio":round(missing_benef_ratio,4),
             "missing_object":missing_objet,
-            "missing_object_ratio":round(missing_objet_ratio,4)
+            "missing_object_ratio":round(missing_objet_ratio,4),
+            "missing_projects":missing_projets,
+            "missing_profiles":missing_profils,
+            "status_policy":"only_online_status_1"
         },
         "aides":rows
     }
