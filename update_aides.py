@@ -176,9 +176,29 @@ def row_quality(row):
     if not row.get("source"): issues.append("source_missing"); score-=7
     if not row.get("benef"): issues.append("beneficiaries_missing"); score-=8
     if not row.get("objet"): issues.append("object_missing"); score-=8
-    if row.get("deps")==["ALL"] and row.get("couverture_geo") and row.get("territoires"):
+    if not row.get("deps") and row.get("couverture_geo"):
+        issues.append("territorial_scope_unresolved"); score-=12
+    elif row.get("deps")==["ALL"] and row.get("couverture_geo") and row.get("territoires"):
         issues.append("territorial_scope_unclear"); score-=6
     return {"issues":issues,"score":max(0,score)}
+
+def relation_tokens(raw):
+    vals=parse_multi(raw)
+    ids=[]; labels=[]
+    for v in vals:
+        s=str(v).strip()
+        if not s: continue
+        if re.fullmatch(r"\d+(?:\.0+)?", s): ids.append(str(int(float(s))))
+        elif re.fullmatch(r"(?:\d+\s*[,;|]\s*)+\d+", s): ids.extend(re.findall(r"\d+", s))
+        elif re.search(r"[A-Za-zÀ-ÿ]", s): labels.append(s)
+        else: ids.append(s)
+    return labels, list(dict.fromkeys(ids))
+
+def safe_previous_list(prev,key):
+    vals=prev.get(key) or []
+    if not isinstance(vals,list): return []
+    return [str(x).strip() for x in vals if str(x).strip() and re.search(r"[A-Za-zÀ-ÿ]",str(x))]
+
 
 def parse_deps(raw):
     t=(raw or "").strip()
@@ -242,10 +262,19 @@ def main():
 
         organisme=pick(r,"organisme") or (prev.get("organisme") or "")
 
-        territoires=parse_multi(pick(r,"territoires"))
-        parsed_deps=parse_deps(" ".join(territoires) or pick(r,"deps"))
-        if parsed_deps==["ALL"] and prev.get("deps") and prev.get("deps")!=["ALL"]:
+        territoire_labels,territoire_ids=relation_tokens(pick(r,"territoires"))
+        projet_labels,projet_ids=relation_tokens(pick(r,"projets"))
+        profil_labels,profil_ids=relation_tokens(pick(r,"profils"))
+        nature_labels,nature_ids=relation_tokens(pick(r,"natures"))
+        contact_labels,contact_ids=relation_tokens(pick(r,"contacts"))
+        financeur_labels,financeur_ids=relation_tokens(pick(r,"financeurs"))
+
+        if territoire_labels:
+            parsed_deps=parse_deps(" ".join(territoire_labels))
+        elif prev.get("deps"):
             parsed_deps=prev.get("deps")
+        else:
+            parsed_deps=[]
 
         status=parse_int(pick(r,"status"))
         if status in {0,2}:
@@ -276,12 +305,18 @@ def main():
             "effectif":pick(r,"effectif") or (prev.get("effectif") or ""),
             "duree_projet":pick(r,"duree_projet"),
             "age_entreprise":pick(r,"age_entreprise"),
-            "projets":parse_multi(pick(r,"projets")) or (prev.get("projets") or []),
-            "profils":parse_multi(pick(r,"profils")) or (prev.get("profils") or []),
-            "natures":parse_multi(pick(r,"natures")) or (prev.get("natures") or []),
-            "territoires":territoires or (prev.get("territoires") or []),
-            "contacts":parse_multi(pick(r,"contacts")),
-            "financeurs":parse_multi(pick(r,"financeurs"))
+            "projets":projet_labels or safe_previous_list(prev,"projets"),
+            "projet_ids":projet_ids,
+            "profils":profil_labels or safe_previous_list(prev,"profils"),
+            "profil_ids":profil_ids,
+            "natures":nature_labels or safe_previous_list(prev,"natures"),
+            "nature_ids":nature_ids,
+            "territoires":territoire_labels or safe_previous_list(prev,"territoires"),
+            "territoire_ids":territoire_ids,
+            "contacts":contact_labels,
+            "contact_ids":contact_ids,
+            "financeurs":financeur_labels,
+            "financeur_ids":financeur_ids
         }
         row["_quality"]=row_quality(row)
         rows.append(row)
@@ -377,7 +412,8 @@ def main():
             "missing_object_ratio":round(missing_objet_ratio,4),
             "missing_projects":missing_projets,
             "missing_profiles":missing_profils,
-            "status_policy":"only_online_status_1"
+            "status_policy":"only_online_status_1",
+            "structured_relation_policy":"numeric_ids_never_used_as_labels"
         },
         "aides":rows
     }

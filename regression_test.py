@@ -76,7 +76,12 @@ checks=[
  ("Presse absente boulangerie", all("presse" not in x["name"].lower() for x in out["boulangerie_invest"]))
 ]
 for label,ok in checks: print(("OK" if ok else "FAIL"),"-",label)
-if not all(ok for _,ok in checks): raise SystemExit(2)
+if not all(ok for _,ok in checks):
+    print("\nDiagnostic plomberie top 8:")
+    for x in out["plomberie_creation"][:8]: print(" -",x["name"],"| confiance",x["confidence"])
+    print("\nDiagnostic industrie énergie top 12:")
+    for x in out["industrie_energy"][:12]: print(" -",x["name"],"| confiance",x["confidence"])
+    raise SystemExit(2)
 
 # Contract tests: official structured fields must influence the engine before free-text guesses.
 synthetic = prefix + r'''
@@ -86,7 +91,10 @@ const r1=scoreAid(base,P);
 const r2=scoreAid({...base,id_aid:"expired",fin:"2020-01-01"},P);
 const r3=scoreAid({...base,id_aid:"disabled",status:2},P);
 const r4=scoreAid({...base,id_aid:"wrong",projets:["Transition énergétique"]},P);
-console.log(JSON.stringify({r1,r2,r3,r4}));
+const numericProject={...base,id_aid:"numeric-project",nom:"Aide à la création d'entreprise",objet:"Soutenir la création et la reprise",projets:["12","47"],profils:["3","8"]};
+const r5=scoreAid(numericProject,P);
+const sig5=structuredProjectSignal(numericProject,P);
+console.log(JSON.stringify({r1,r2,r3,r4,r5,sig5}));
 '''
 with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
     f.write(synthetic); synfile=f.name
@@ -99,7 +107,9 @@ contract=[
  ("Preuve projet officielle ajoutée", s["r1"] is not None and any("indexation officielle" in x for x in s["r1"].get("reasons",[]))),
  ("Aide expirée exclue", s["r2"] is None),
  ("Aide désactivée exclue", s["r3"] is None),
- ("Projet officiel incompatible exclu", s["r4"] is None)
+ ("Projet officiel incompatible exclu", s["r4"] is None),
+ ("IDs projet non résolus ignorés", s["r5"] is not None),
+ ("IDs projet ne valent pas indexation connue", s["sig5"]["known"] is False)
 ]
 for label,ok in contract: print(("OK" if ok else "FAIL"),"-",label)
 if not all(ok for _,ok in contract): raise SystemExit(3)
@@ -114,6 +124,8 @@ updater_checks=[
  ("normalize_date FR", upd.normalize_date("31/12/2026") == "2026-12-31"),
  ("parse status", upd.parse_int("2") == 2),
  ("parse département", upd.parse_deps("Yonne (89)") == ["89"]),
+ ("relation IDs séparés", upd.relation_tokens("12;47") == ([],["12","47"])),
+ ("relation labels séparés", upd.relation_tokens("Création; Transition énergétique") == (["Création","Transition énergétique"],[])),
 ]
 for label,ok in updater_checks: print(("OK" if ok else "FAIL"),"-",label)
 if not all(ok for _,ok in updater_checks): raise SystemExit(4)
