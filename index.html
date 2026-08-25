@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AideRadar V17.0</title>
+<title>AideRadar V22.0</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -18,10 +18,27 @@ button:disabled{opacity:.55}.small,.status{font-size:13px;color:var(--muted);lin
 .result h3{font-size:20px;margin:12px 0 8px}.meta{font-size:14px;color:var(--muted);margin:5px 0}.box{background:#f9fafb;padding:12px;border-radius:12px;font-size:14px;line-height:1.5;margin-top:10px}.warn{background:var(--warnbg);color:var(--warn)}
 a{color:var(--p);font-weight:750;text-decoration:none}.source{display:inline-block;margin-top:12px}
 .debug{font-size:12px;color:#98a2b3;margin-top:10px}
-body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px}header h1{font-size:27px;letter-spacing:-.5px;margin-bottom:4px}header p{font-size:14px;color:#667085;line-height:1.45}.card,.result{border:1px solid #e4e7ec!important;border-radius:18px!important;box-shadow:0 2px 8px rgba(16,24,40,.04)!important}#radarForm.card{padding:15px}label{font-size:13px;font-weight:700;color:#344054}input,select,textarea{min-height:48px;border-radius:12px!important;font-size:16px!important;padding:10px 12px!important}button{min-height:48px;border-radius:12px!important;font-weight:800!important}button[type=submit]{width:100%;font-size:16px;background:#175cd3!important}#results{margin-top:18px}#results h2{font-size:22px}.result{padding:15px!important;margin-bottom:12px!important;background:#fff!important}.result h3{font-size:18px;line-height:1.25}.box{border-radius:12px!important;padding:12px!important}.ar-intro{background:linear-gradient(180deg,#eff6ff,#fff);border:1px solid #d1e9ff;border-radius:16px;padding:14px;margin:8px 0 14px}.ar-intro strong{display:block;font-size:15px;margin-bottom:5px}.ar-intro span,.ar-help{font-size:13px;line-height:1.45;color:#667085}.ar-step{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:#eaf2ff;color:#175cd3;font-weight:900;margin-right:4px}.ar-help{padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #e4e7ec;margin-bottom:12px}#exportBtn{width:100%}@media(max-width:600px){.wrap{padding:9px 9px 30px}.grid,.row{grid-template-columns:1fr!important;gap:10px!important}#radarForm.card{padding:13px}.result{padding:13px!important}}#postalStatus.ok{color:#067647;font-weight:700}#postalStatus.warn{color:#b54708;font-weight:700}#commune:disabled{background:#f2f4f7!important;color:#98a2b3}</style>
+body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px}header h1{font-size:27px;letter-spacing:-.5px;margin-bottom:4px}header p{font-size:14px;color:#667085;line-height:1.45}.card,.result{border:1px solid #e4e7ec!important;border-radius:18px!important;box-shadow:0 2px 8px rgba(16,24,40,.04)!important}#radarForm.card{padding:15px}label{font-size:13px;font-weight:700;color:#344054}input,select,textarea{min-height:48px;border-radius:12px!important;font-size:16px!important;padding:10px 12px!important}button{min-height:48px;border-radius:12px!important;font-weight:800!important}button[type=submit]{width:100%;font-size:16px;background:#175cd3!important}#results{margin-top:18px}#results h2{font-size:22px}.result{padding:15px!important;margin-bottom:12px!important;background:#fff!important}.result h3{font-size:18px;line-height:1.25}.box{border-radius:12px!important;padding:12px!important}.ar-intro{background:linear-gradient(180deg,#eff6ff,#fff);border:1px solid #d1e9ff;border-radius:16px;padding:14px;margin:8px 0 14px}.ar-intro strong{display:block;font-size:15px;margin-bottom:5px}.ar-intro span,.ar-help{font-size:13px;line-height:1.45;color:#667085}.ar-step{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:#eaf2ff;color:#175cd3;font-weight:900;margin-right:4px}.ar-help{padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #e4e7ec;margin-bottom:12px}#exportBtn{width:100%}@media(max-width:600px){.wrap{padding:9px 9px 30px}.grid,.row{grid-template-columns:1fr!important;gap:10px!important}#radarForm.card{padding:13px}.result{padding:13px!important}}#postalStatus.ok{color:#067647;font-weight:700}#postalStatus.warn{color:#b54708;font-weight:700}#commune:disabled{background:#f2f4f7!important;color:#98a2b3}
+#resultSummary{display:none;margin:10px 0 14px}
+.ar-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ar-stat{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:12px;text-align:center}
+.ar-stat strong{display:block;font-size:21px;line-height:1.1}.ar-stat span{font-size:12px;color:#667085}
+.ar-next{background:#eff8ff;border:1px solid #b2ddff;border-radius:14px;padding:12px;margin-top:10px;font-size:13px;line-height:1.45}
+@media(max-width:520px){.ar-summary{grid-template-columns:1fr 1fr}.ar-stat:last-child{grid-column:1/-1}}
+
+.geo-ok{color:#067647;font-weight:700}.geo-warn{color:#b54708;font-weight:700}
+.geo-action{display:inline-block;margin-top:8px;padding:9px 11px;border-radius:10px;background:#eff8ff;color:#175cd3;font-size:13px;font-weight:800}
+
+.confidence{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;background:#f2f4f7;color:#344054;margin-left:6px}
+.quality-note{font-size:12px;color:#667085;margin-top:6px}
+.saved-ok{color:#067647;font-weight:700}
+@media(max-width:520px){#saveProfileBtn,#clearProfileBtn{flex-basis:100%}}
+
+.base-fresh{color:#067647;font-weight:700}.base-aging{color:#b54708;font-weight:700}.base-stale{color:#b42318;font-weight:700}
+</style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V17.0</span></div>
+<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V22.0</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Le moteur V16 applique les restrictions métier, projet et bénéficiaire avant le classement, puis distingue les critères confirmés de ceux restant à vérifier.</p>
 
@@ -74,6 +91,11 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 <option value="">Choisir…</option><option value="0">0</option><option value="1-4">1 à 4</option><option value="5-9">5 à 9</option><option value="10-49">10 à 49</option><option value="50-249">50 à 249</option><option value="250+">250 ou plus</option>
 </select></div><div><label for="postalCode">Code postal</label><input id="postalCode" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="Ex. 89000"><div class="small" id="postalStatus">Identifie automatiquement la commune et l’EPCI.</div></div><div><label for="commune">Commune</label><select id="commune" disabled><option value="">Saisissez d’abord le code postal</option></select>
 <input id="communeManual" placeholder="Ou saisissez la commune manuellement" autocomplete="address-level2" style="margin-top:8px">
+<label for="streetAddress" style="margin-top:10px">Adresse de l’établissement <span style="font-weight:500;color:#667085">(facultatif)</span></label>
+<input id="streetAddress" autocomplete="street-address" placeholder="Ex. 12 rue de Paris">
+<input type="hidden" id="latitude"><input type="hidden" id="longitude">
+<div id="addressStatus" class="small" style="margin-top:6px"></div>
+<div class="small">Utile pour les aides dépendant d’un zonage très précis (QPV, AFR, FRR…).</div>
 <input type="hidden" id="communeCode"><input type="hidden" id="epciCode">
 
 <label>Votre projet</label>
@@ -107,14 +129,19 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 </details>
 <button id="submitBtn" disabled>Chargement de la base…</button>
 <p class="small">Source : base open data Aides entreprises. Le moteur filtre d’abord l’éligibilité puis classe les aides. Les informations facultatives servent uniquement à réduire les faux positifs.</p>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+  <button type="button" id="saveProfileBtn" style="margin-top:0;flex:1;background:#101828">💾 Mémoriser ce profil</button>
+  <button type="button" id="clearProfileBtn" style="margin-top:0;flex:1;background:#667085">Effacer le profil</button>
+</div>
+<div id="profileSaveStatus" class="small" style="margin-top:7px"></div>
 </form>
-<div id="status" class="status">Chargement de la base officielle…</div>
+<div id="status" class="status">Chargement de la base officielle…</div><div id="baseFreshness" class="small" style="margin-top:7px"></div>
 </section>
 
 <section id="results">
 <h2>Résultats</h2>
-<p class="small">Les aides sont filtrées par éligibilité et conditions structurantes avant classement. Les zonages, formations et financements obligatoires sont traités plus strictement.</p>
-<div id="list"></div>
+<p class="small">Les aides sont filtrées puis classées par niveau de confiance. Les doublons sont regroupés et la qualité des fiches influence désormais directement le classement.</p>
+<div id="resultSummary"></div><div id="list"></div>
 <div id="debug" class="debug"></div>
 <div style="margin-top:16px">
   <button id="exportBtn" type="button" style="display:none">📤 Exporter le diagnostic</button>
@@ -235,6 +262,28 @@ function parseFinanceRange(raw){
   return null;
 }
 
+
+function parseFixedAidAmount(raw){
+  const t=clean(raw||"");
+  // Refuse ranges, percentages and variable formulas.
+  if(/%|(?:de|entre)\s*[\d\s]+\s*€.{0,18}(?:a|à|et|-)\s*[\d\s]+\s*€|jusqu['’]?(?:a|à)|maximum|plafond|selon|variable/i.test(t)) return null;
+
+  const patterns=[
+    /\bprime(?: forfaitaire)?\s+(?:de|d['’]un montant de)\s*([\d\s]+)\s*€/i,
+    /\bsubvention(?: forfaitaire)?\s+(?:de|d['’]un montant de)\s*([\d\s]+)\s*€/i,
+    /\baide(?: forfaitaire)?\s+(?:de|d['’]un montant de)\s*([\d\s]+)\s*€/i,
+    /\bmontant forfaitaire\s*(?:de|:)?\s*([\d\s]+)\s*€/i
+  ];
+  for(const rx of patterns){
+    const m=t.match(rx);
+    if(m){
+      const n=euroNumber(m[1]);
+      if(n) return n;
+    }
+  }
+  return null;
+}
+
 function estimateAidAmount(a,budget){
   if(!budget || budget<=0) return null;
 
@@ -276,6 +325,18 @@ function estimateAidAmount(a,budget){
       ambiguous:true,
       type:"aide",
       reason:"Le taux s'applique à une dépense spécifique, pas au budget global du projet"
+    };
+  }
+
+  const fixedAmount=parseFixedAidAmount(a.montant||"");
+  if(fixedAmount){
+    return {
+      ambiguous:false,
+      type:"aide",
+      fixed:true,
+      minAmount:fixedAmount,
+      maxAmount:fixedAmount,
+      reason:"Montant forfaitaire indiqué dans la fiche"
     };
   }
 
@@ -670,6 +731,11 @@ function qualityPenalty(a){
  return penalty;
 }
 
+
+function needsExternalZoneVerification(a){
+ const txt=norm([a.nom,a.benef,a.objet,a.conditions].join(" "));
+ return /\b(qpv|quartier prioritaire|zfu|zone franche urbaine|afr|zone aide a finalite regionale|zai|zrr|frr|france ruralite revitalisation|zrd)\b/.test(txt);
+}
 function hardConditionGate(a,p){
   const txt=norm([a.nom,a.benef,a.objet,a.conditions,a.montant].join(" "));
 
@@ -692,6 +758,61 @@ function hardConditionGate(a,p){
 
   // Microcrédit / prêt bancaire obligatoire : sans signal explicite du formulaire, on garde à confirmer via eligibilitySummary.
   return {exclude:false};
+}
+
+function confidenceScore(a,r,p){
+  const es=eligibilitySummary(a,r,p);
+  let c=Math.max(0,Math.min(100,r.score||0));
+
+  // Eligibility certainty weighs more than raw keyword score.
+  if(es.state==="yes") c+=6;
+  if(es.state==="check") c-=8;
+  if(es.state==="no") c-=100;
+
+  // Each unresolved condition reduces confidence.
+  const checks=(es.checks||[]).filter(x=>x.state==="check");
+  const genericChecks=checks.filter(x=>x.label==="Condition complémentaire").length;
+  const specificChecks=checks.length-genericChecks;
+  c-=Math.min(24,specificChecks*4 + genericChecks*1);
+
+  // Data quality from the curated database.
+  const q=dataQuality(a);
+  if(q.score<80) c-=6;
+  if(q.score<60) c-=10;
+  if(q.issues?.includes("source_missing")) c-=10;
+  if(q.issues?.includes("territorial_scope_unclear")) c-=12;
+
+  // Strong local proof matters.
+  if((a.deps||[]).includes(p.dept) && !(a.deps||[]).includes("ALL")) c+=8;
+  if(p.project==="creation" && (a.deps||[]).includes(p.dept) &&
+     /\b(initiative|creation|reprise|pret d'honneur)\b/.test(norm([a.nom,a.objet,a.benef].join(" ")))) c+=6;
+
+  return Math.max(0,Math.min(100,Math.round(c)));
+}
+
+function aidFingerprint(a){
+  const name=norm(a.nom)
+    .replace(/\b(aide|pret|prêt|subvention|dispositif|fonds|programme)\b/g," ")
+    .replace(/\b(regionale|régionale|national|nationale|territoriale)\b/g," ")
+    .replace(/\s+/g," ").trim();
+  const src=norm((a.source||"").split("?")[0]).replace(/^https?:\/\//,"").replace(/^www\./,"");
+  return name+"|"+src;
+}
+
+function dedupeRankedRows(rows,p){
+  const seen=new Map(), out=[];
+  for(const x of rows){
+    const fp=aidFingerprint(x.a);
+    const c=confidenceScore(x.a,x.r,p);
+    if(!seen.has(fp)){
+      seen.set(fp,out.length);
+      out.push({...x,confidence:c});
+      continue;
+    }
+    const idx=seen.get(fp);
+    if(c>out[idx].confidence) out[idx]={...x,confidence:c};
+  }
+  return out;
 }
 function scoreAid(a,p){
  let score=0,reasons=[],penalties=[];
@@ -814,7 +935,7 @@ function scoreAid(a,p){
 
 
 function detectEligibilityChecks(a,p){
-  const txt=norm([a.benef,a.conditions,a.objet].join(" "));
+  const txt=norm([a.benef,a.conditions,a.objet,a.montant].join(" "));
   const checks=[];
 
   function add(label, state, detail){
@@ -1104,7 +1225,7 @@ function restrictedProfileGate(a,p){
 }
 
 function universalMandatoryChecks(a,p){
-  const txt=norm([a.nom,a.benef,a.conditions,a.objet,a.operations].join(" "));
+  const txt=norm([a.nom,a.benef,a.conditions,a.objet,a.operations,a.montant].join(" "));
   const checks=[];
 
   function add(label,state,detail,hard=false){
@@ -1219,6 +1340,10 @@ function universalMandatoryChecks(a,p){
   if(/\b(toujours couple a un pret bancaire|couple a un pret bancaire|prêt bancaire obligatoire|pret bancaire obligatoire|partenariat financier|microcredit de l'adie|microcrédit de l’adie|microcredit adie)\b/.test(txt))
     add("Financement associé","check","Un prêt bancaire, microcrédit ou partenariat financier complémentaire est obligatoire");
 
+
+  if(/\b(toujours couple a un pret bancaire|couple a un pret bancaire|couplé à un prêt bancaire|pret bancaire.{0,20}obligatoire|prêt bancaire.{0,20}obligatoire|microcredit de l'adie|microcrédit de l’adie|partenariat financier.{0,35}obligatoire)\b/.test(txt))
+    add("Financement complémentaire","check","Un prêt bancaire, microcrédit ou financement partenaire est requis en complément");
+
   // Conditions financières / territoriales non présentes dans le formulaire
   if(/\b(n'ayant pas acces au credit bancaire|n'ayant pas accès au crédit bancaire|sans acces au credit bancaire|sans accès au crédit bancaire)\b/.test(txt))
     add("Accès au crédit bancaire","check","Absence d’accès au crédit bancaire à confirmer");
@@ -1297,7 +1422,10 @@ function mergeEligibilityChecks(a,r,p){
       if(rank[c.state]>rank[old.state]) byKey.set(key,c);
     }
   }
-  return Array.from(byKey.values()).map(c=>({
+  let merged=Array.from(byKey.values());
+  const hasSpecific=merged.some(c=>c.label && c.label!=="Condition complémentaire" && c.state==="check");
+  if(hasSpecific) merged=merged.filter(c=>c.label!=="Condition complémentaire");
+  return merged.map(c=>({
     label:c.label||"Condition complémentaire",
     state:c.state||"check",
     detail:c.detail||"Une condition obligatoire de la fiche reste à confirmer",
@@ -1370,8 +1498,8 @@ let LAST_DIAGNOSTIC=null;
 function buildDiagnostic(profile, rows, territorialCount, scoredCount){
   return {
     app:"AideRadar",
-    version:"17.0",
-    engine:"eligibility-first-v5.1-hard-conditions",
+    version:"22.0",
+    engine:"eligibility-first-v5.5-autodata-guarded",
     generated_at:new Date().toISOString(),
     profile:{
       activity:profile.activity,
@@ -1384,6 +1512,9 @@ function buildDiagnostic(profile, rows, territorialCount, scoredCount){
       commune:profile.commune||"",
       communeCode:profile.communeCode||"",
       epciCode:profile.epciCode||"",
+      streetAddress:profile.streetAddress||"",
+      latitude:profile.latitude||0,
+      longitude:profile.longitude||0,
       employees:profile.employees,
       project:profile.project,
       budget:profile.budget,
@@ -1457,7 +1588,23 @@ async function loadDB(){
   if(!r.ok) throw new Error("HTTP "+r.status);
   const j=await r.json();
   DB=Array.isArray(j)?j:(j.aides||[]);
+  window.AIDERADAR_DB_META=Array.isArray(j)?{}:{
+    updated:j.updated||"",
+    generated_at:j.generated_at||"",
+    source_url:j.source_url||"",
+    count:j.count||DB.length,
+    quality:j.quality||{}
+  };
   if(!DB.length) throw new Error("Base vide");
+  const freshness=document.getElementById("baseFreshness");
+  if(freshness && !Array.isArray(j) && j.updated){
+    const dt=new Date(j.updated+"T00:00:00");
+    const days=Number.isNaN(dt.getTime())?null:Math.floor((Date.now()-dt.getTime())/86400000);
+    if(days!==null){
+      freshness.className="small "+(days<=14?"base-fresh":days<=30?"base-aging":"base-stale");
+      freshness.textContent=days<=14?`Base à jour · ${j.updated}`:days<=30?`Base datée du ${j.updated} · actualisation bientôt recommandée`:`⚠️ Base datée du ${j.updated} · actualisation recommandée`;
+    }
+  }
   status.textContent=`✅ ${DB.length.toLocaleString("fr-FR")} aides chargées · données : ${j.updated||"source officielle"} · contrôle qualité actif`;
   btn.disabled=false;btn.textContent="Analyser les aides";
  }catch(err){
@@ -1516,6 +1663,84 @@ async function resolvePostalCode(cp){
 }
 communeSelect.addEventListener("change",applySelectedCommune);postalInput.addEventListener("input",()=>{const cp=postalInput.value.replace(/\D/g,"").slice(0,5);postalInput.value=cp;clearTimeout(postalTimer);if(cp.length!==5){communeSelect.disabled=true;communeSelect.innerHTML="<option>Saisissez d’abord le code postal</option>";return;}postalTimer=setTimeout(()=>resolvePostalCode(cp),250);});
 
+
+const streetInput=document.getElementById("streetAddress");
+const latInput=document.getElementById("latitude");
+const lonInput=document.getElementById("longitude");
+const addressStatus=document.getElementById("addressStatus");
+let addressTimer=null;
+
+async function geocodeFullAddress(){
+  const street=(streetInput?.value||"").trim();
+  const cp=(postalInput?.value||"").trim();
+  const communeManualVal=(document.getElementById("communeManual")?.value||"").trim();
+  const selectedCommune=(communeSelect && !communeSelect.disabled && communeSelect.value)?(communeSelect.selectedOptions?.[0]?.textContent||"").trim():"";
+  const city=selectedCommune||communeManualVal;
+  if(!street || !cp){ latInput.value=""; lonInput.value=""; if(addressStatus) addressStatus.textContent=""; return; }
+
+  try{
+    const q=[street,cp,city].filter(Boolean).join(" ");
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),5000);
+    const res=await fetch("https://api-adresse.data.gouv.fr/search/?limit=1&q="+encodeURIComponent(q),{signal:controller.signal});
+    clearTimeout(timer);
+    if(!res.ok) throw new Error("géocodage indisponible");
+    const data=await res.json();
+    const f=data?.features?.[0];
+    const coords=f?.geometry?.coordinates;
+    if(!coords || coords.length<2) throw new Error("adresse non reconnue");
+    lonInput.value=coords[0]; latInput.value=coords[1];
+    if(addressStatus){
+      addressStatus.className="small geo-ok";
+      addressStatus.textContent="Adresse reconnue : "+(f.properties?.label||q);
+    }
+  }catch(_){
+    latInput.value=""; lonInput.value="";
+    if(addressStatus){
+      addressStatus.className="small geo-warn";
+      addressStatus.textContent="Adresse non vérifiée automatiquement. Les aides de zonage resteront prudentes.";
+    }
+  }
+}
+if(streetInput){
+ streetInput.addEventListener("input",()=>{clearTimeout(addressTimer);addressTimer=setTimeout(geocodeFullAddress,450);});
+}
+if(communeSelect) communeSelect.addEventListener("change",()=>setTimeout(geocodeFullAddress,50));
+if(postalInput) postalInput.addEventListener("change",()=>setTimeout(geocodeFullAddress,50));
+
+
+
+const PROFILE_STORAGE_KEY="aideradar:v20:profile";
+function currentProfileFormState(){
+ const ids=["activity","activityDetail","naf","companyStatus","companyAge","dept","postalCode","communeManual","streetAddress","employees","project","budget","turnover","ownerAge"];
+ const obj={};
+ ids.forEach(id=>{const el=document.getElementById(id); if(el) obj[id]=el.value;});
+ ["franchise","jobSeeker"].forEach(id=>{const el=document.getElementById(id); if(el) obj[id]=Boolean(el.checked);});
+ return obj;
+}
+function restoreProfileFormState(obj){
+ if(!obj||typeof obj!=="object") return;
+ for(const [id,v] of Object.entries(obj)){
+   const el=document.getElementById(id); if(!el) continue;
+   if(el.type==="checkbox") el.checked=Boolean(v); else el.value=v??"";
+ }
+ if(obj.postalCode && String(obj.postalCode).length===5) resolvePostalCode(String(obj.postalCode));
+}
+document.getElementById("saveProfileBtn")?.addEventListener("click",()=>{
+ try{
+   localStorage.setItem(PROFILE_STORAGE_KEY,JSON.stringify(currentProfileFormState()));
+   const s=document.getElementById("profileSaveStatus"); if(s){s.className="small saved-ok";s.textContent="Profil mémorisé sur cet appareil.";}
+ }catch(_){}
+});
+document.getElementById("clearProfileBtn")?.addEventListener("click",()=>{
+ try{localStorage.removeItem(PROFILE_STORAGE_KEY);}catch(_){}
+ const s=document.getElementById("profileSaveStatus"); if(s){s.className="small";s.textContent="Profil mémorisé effacé.";}
+});
+try{
+ const saved=JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||"null");
+ if(saved) restoreProfileFormState(saved);
+}catch(_){}
+
 document.getElementById("radarForm").addEventListener("submit",function(e){
  e.preventDefault();
  try{
@@ -1535,6 +1760,9 @@ document.getElementById("radarForm").addEventListener("submit",function(e){
   })(),
   communeCode:(document.getElementById("communeCode")?.value||"").trim(),
   epciCode:(document.getElementById("epciCode")?.value||"").trim(),
+  streetAddress:(document.getElementById("streetAddress")?.value||"").trim(),
+  latitude:Number(document.getElementById("latitude")?.value||0),
+  longitude:Number(document.getElementById("longitude")?.value||0),
   employees:document.getElementById("employees").value,
   project:document.getElementById("project").value,
   budget:Number(document.getElementById("budget").value||0),
@@ -1550,19 +1778,35 @@ document.getElementById("radarForm").addEventListener("submit",function(e){
  // Les incompatibilités certaines ne sont plus montrées à l'utilisateur.
  const eligibleScored=scored.filter(x=>eligibilitySummary(x.a,x.r,p).state!=="no");
 
- const rankState={yes:8,check:-4,no:-100};
  eligibleScored.sort((x,y)=>{
-   const xs=eligibilitySummary(x.a,x.r,p).state;
-   const ys=eligibilitySummary(y.a,y.r,p).state;
-   const xv=x.r.score+(rankState[xs]||0);
-   const yv=y.r.score+(rankState[ys]||0);
-   return (yv-xv) || (y.r.score-x.r.score);
+   const xc=confidenceScore(x.a,x.r,p);
+   const yc=confidenceScore(y.a,y.r,p);
+   return (yc-xc) || (y.r.score-x.r.score);
  });
 
- const strong=eligibleScored.filter(x=>x.r.score>=50);
- const rows=(strong.length?strong:eligibleScored).slice(0,12);
+ const deduped=dedupeRankedRows(eligibleScored,p);
+ const strong=deduped.filter(x=>x.r.score>=50);
+ const rows=(strong.length?strong:deduped).slice(0,12);
 
  const list=document.getElementById("list");
+ const summaryEl=document.getElementById("resultSummary");
+ if(summaryEl){
+   const states=rows.map(x=>eligibilitySummary(x.a,x.r,p).state);
+   const yesCount=states.filter(s=>s==="yes").length;
+   const checkCount=states.filter(s=>s==="check").length;
+   const financingCount=rows.filter(x=>{
+     const e=estimateAidAmount(x.a,p.budget);
+     return e && e.type==="financement";
+   }).length;
+   const avgConfidence=rows.length?Math.round(rows.reduce((s,x)=>s+confidenceScore(x.a,x.r,p),0)/rows.length):0;
+   summaryEl.style.display="block";
+   summaryEl.innerHTML=`<div class="ar-summary">
+     <div class="ar-stat"><strong>${rows.length}</strong><span>aides retenues</span></div>
+     <div class="ar-stat"><strong>${yesCount}</strong><span>probablement éligibles</span></div>
+     <div class="ar-stat"><strong>${avgConfidence}%</strong><span>confiance moyenne</span></div>
+   </div>
+   <div class="ar-next"><strong>Priorité :</strong> commencez par les 2 premières aides. Vérifiez ensuite les conditions signalées avant de contacter l’organisme ou d’engager une dépense.</div>`;
+ }
  const priorHelp=document.getElementById("arResultHelp"); if(priorHelp) priorHelp.remove();
  const help=document.createElement("div"); help.id="arResultHelp"; help.className="ar-help";
  help.innerHTML="<strong>Comment lire les résultats ?</strong><br>Commencez par les premières aides. « À confirmer » signifie qu’une condition précise doit encore être vérifiée avant toute démarche.";
@@ -1591,9 +1835,12 @@ document.getElementById("radarForm").addEventListener("submit",function(e){
         const amount=min&&max?`${min} à ${max}`:(max?`jusqu’à ${max}`:"Montant à déterminer");
         return `<div class="box" style="background:#ecfdf3"><strong>Fourchette de financement indiquée</strong><br><span style="font-size:22px;font-weight:800">${amount}</span><br><span style="font-size:12px;color:#667085">Il s’agit d’un prêt/financement, pas d’une subvention calculée sur le budget du projet.</span></div>`;
       }
+      if(e.fixed){
+        return `<div class="box" style="background:#ecfdf3"><strong>Montant indiqué</strong><br><span style="font-size:22px;font-weight:800">${euro(e.maxAmount)}</span><br><span style="font-size:12px;color:#667085">Montant forfaitaire détecté dans la fiche.</span></div>`;
+      }
       const label="Aide potentielle estimée";
       const amount=euro(e.maxAmount);
-      const rate=`${e.maxRate} %`;
+      const rate=e.maxRate?`${e.maxRate} %`:"";
       const cap=e.cap?` · plafond détecté : ${euro(e.cap)}`:"";
       return `<div class="box" style="background:#ecfdf3"><strong>${label}</strong><br><span style="font-size:22px;font-weight:800">${amount}</span><br><span style="color:#667085">${rate}${cap}</span><br><span style="font-size:12px;color:#667085">Estimation indicative à partir du budget saisi. Les dépenses réellement éligibles peuvent être différentes.</span></div>`;
     })():""}
