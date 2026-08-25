@@ -404,6 +404,42 @@ for label,ok in ux_checks: print(("OK" if ok else "FAIL"),"-",label)
 if not all(ok for _,ok in ux_checks): raise SystemExit(16)
 print(f"UX contracts: {len(ux_checks)} checks passed.")
 
+
+# V30 / V1 release contracts.
+from collections import Counter
+
+ids=re.findall(r'\bid=["\']([^"\']+)["\']', html)
+id_counts=Counter(ids)
+critical_ids=[
+ "radarForm","wizardError","activity","activityDetail","companyStatus","companyAge",
+ "employees","dept","project","budget","submitBtn","status","retryDbBtn","results",
+ "resultSummary","roadmap","trackingDashboard","trackingStats","trackingList","list","exportBtn"
+]
+
+release_checks=[
+ ("V1 title présent", "<title>AideRadar — V1.0</title>" in html),
+ ("Badge V1 présent", 'class="release-badge">V1.0<' in html),
+ ("Ancienne version V29 absente", "V29.0" not in html),
+ ("Diagnostic version 1.0.0", 'version:"1.0.0"' in html),
+ ("Moteur release V30", 'engine:"aideradar-v1.0-release-v30"' in html),
+ ("Cache-busting base V30", './aides_v15.json?v=30' in html),
+ ("Meta description présente", '<meta name="description"' in html),
+ ("Meta theme-color présente", '<meta name="theme-color"' in html),
+ ("IDs HTML uniques", all(v==1 for v in id_counts.values())),
+ ("Tous les IDs critiques présents", all(id_counts.get(i)==1 for i in critical_ids)),
+ ("Wizard reste en 3 étapes", html.count('data-wizard-step="')==3),
+ ("Retry base conservé", 'id="retryDbBtn"' in html),
+ ("Dashboard conservé", 'id="trackingDashboard"' in html),
+ ("Dossier assistant conservé", 'class="dossier-box"' in html),
+ ("Parcours financement conservé", 'class="financing-path"' in html),
+ ("Zonages officiels conservés", all(x in html for x in ['id="zoneQpv"','id="zoneFrr"','id="zoneAfr"'])),
+ ("Source officielle rel noopener", 'target="_blank" rel="noopener"' in html),
+ ("Aucun doublon submitBtn", id_counts.get("submitBtn")==1)
+]
+for label,ok in release_checks: print(("OK" if ok else "FAIL"),"-",label)
+if not all(ok for _,ok in release_checks): raise SystemExit(17)
+print(f"V1 release contracts: {len(release_checks)} checks passed.")
+
 # Updater parsing contracts: catch schema regressions before committing a rebuilt DB.
 import importlib.util
 spec=importlib.util.spec_from_file_location("aideradar_updater", ROOT / "update_aides.py")

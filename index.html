@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AideRadar V29.0</title>
+<meta name="description" content="AideRadar aide les entreprises à identifier, prioriser et préparer leurs demandes d’aides publiques.">
+<meta name="theme-color" content="#ffffff">
+<title>AideRadar — V1.0</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -199,12 +201,16 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   .precision-panel>summary{align-items:flex-start}
 }
 
+
+.release-badge{display:inline-flex;align-items:center;margin-left:6px;padding:3px 7px;border-radius:999px;background:#ecfdf3;color:#067647;font-size:11px;font-weight:900;vertical-align:middle}
+
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span style="color:#667085;font-weight:600">V29.0</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V1.0</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
+<p class="small" style="margin-top:-6px">Version 1.0 · base officielle actualisée automatiquement · résultats à confirmer auprès de l’organisme instructeur.</p>
 
 <section class="card">
 <div class="ar-intro"><strong>🎯 Trouvez vos aides en moins d’une minute</strong><span><span class="ar-step">1</span>Entreprise &nbsp; <span class="ar-step">2</span>Projet &nbsp; <span class="ar-step">3</span>Aides à vérifier en priorité</span></div>
@@ -3024,8 +3030,8 @@ let LAST_DIAGNOSTIC=null;
 function buildDiagnostic(profile, rows, territorialCount, scoredCount){
   return {
     app:"AideRadar",
-    version:"29.0",
-    engine:"eligibility-first-v12.0-mobile-wizard",
+    version:"1.0.0",
+    engine:"aideradar-v1.0-release-v30",
     generated_at:new Date().toISOString(),
     profile:{
       activity:profile.activity,
@@ -3253,7 +3259,7 @@ async function loadDB(){
  if(retry) retry.hidden=true;
  if(status) status.textContent="Chargement de la base officielle…";
  try{
-  const r=await fetch("./aides_v15.json?v=29",{cache:"no-store"});
+  const r=await fetch("./aides_v15.json?v=30",{cache:"no-store"});
   if(!r.ok) throw new Error("HTTP "+r.status);
   const j=await r.json();
   DB=Array.isArray(j)?j:(j.aides||[]);
