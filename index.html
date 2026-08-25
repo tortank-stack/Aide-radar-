@@ -204,13 +204,34 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 
 .release-badge{display:inline-flex;align-items:center;margin-left:6px;padding:3px 7px;border-radius:999px;background:#ecfdf3;color:#067647;font-size:11px;font-weight:900;vertical-align:middle}
 
+
+/* AideRadar V2.0 — dossier financement */
+.project-library{margin-top:16px}.project-library h2{font-size:20px;margin:0 0 4px}.project-library p{font-size:12px;color:#667085;margin:0;line-height:1.4}
+.saved-project-empty{font-size:13px;color:#667085;background:#f9fafb;border:1px dashed #d0d5dd;border-radius:12px;padding:12px;margin-top:10px}
+.saved-project-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-top:1px solid #eaecf0;padding:11px 0}.saved-project-item:first-child{border-top:0;margin-top:8px}
+.saved-project-title{font-weight:850;font-size:14px}.saved-project-meta{font-size:11px;color:#667085;margin-top:3px;line-height:1.35}.saved-project-actions{display:flex;gap:6px}.saved-project-actions button{min-height:36px!important;width:auto!important;margin:0!important;padding:7px 9px!important;font-size:11px!important}.saved-project-load{background:#175cd3!important}.saved-project-delete{background:#fff!important;color:#b42318!important;border:1px solid #fda29b!important}
+.finance-cockpit{background:linear-gradient(180deg,#eff8ff,#fff);border:1px solid #b2ddff;border-radius:18px;padding:15px;margin:10px 0 14px}.finance-cockpit h3{margin:0 0 4px;font-size:18px}.finance-cockpit>p{margin:0 0 12px;font-size:12px;color:#667085;line-height:1.4}
+.finance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.finance-kpi{background:#fff;border:1px solid #d1e9ff;border-radius:12px;padding:10px}.finance-kpi strong{display:block;font-size:17px}.finance-kpi span{font-size:10px;color:#667085}.finance-kpi.remaining strong{color:#b54708}.finance-kpi.covered strong{color:#067647}
+.finance-progress{height:10px;border-radius:999px;background:#eaecf0;overflow:hidden;margin:12px 0 5px}.finance-progress>span{display:block;height:100%;background:#12b76a}.finance-note{font-size:11px;color:#667085;line-height:1.4}
+.finance-columns{display:grid;grid-template-columns:1.1fr .9fr;gap:10px;margin-top:12px}.finance-panel{background:#fff;border:1px solid #d1e9ff;border-radius:12px;padding:11px}.finance-panel h4{margin:0 0 7px;font-size:13px}.finance-step{display:grid;grid-template-columns:24px 1fr;gap:7px;padding:7px 0;border-top:1px solid #f2f4f7}.finance-step:first-of-type{border-top:0}.finance-step-num{width:22px;height:22px;border-radius:50%;background:#175cd3;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}.finance-step b{font-size:12px}.finance-step div div{font-size:11px;color:#667085;margin-top:2px;line-height:1.35}
+.source-status{margin-top:9px;border-radius:10px;padding:9px 10px;font-size:11px;line-height:1.4}.source-status.ok{background:#ecfdf3;color:#067647}.source-status.warn{background:#fffaeb;color:#b54708}.source-status.expired{background:#fef3f2;color:#b42318}.source-status b{font-weight:900}
+.aggregate-checklist{display:grid;gap:6px}.aggregate-doc{font-size:11px;line-height:1.35;padding:6px 8px;border-radius:9px;background:#f9fafb;border:1px solid #eaecf0}
+.v2-plan-actions button{min-width:135px}.print-only{display:none}
+@media(max-width:620px){.finance-grid{grid-template-columns:1fr 1fr}.finance-columns{grid-template-columns:1fr}.saved-project-item{grid-template-columns:1fr}.saved-project-actions{justify-content:stretch}.saved-project-actions button{flex:1}.v2-plan-actions button{flex-basis:calc(50% - 4px)!important;min-width:0}}
+@media print{
+  body{background:#fff!important}.wrap{max-width:none;padding:0!important}.card,#projectLibrary,#trackingDashboard,#list,.technical-details,#planActions,#arResultHelp,.source-note,#status,#retryDbBtn,#baseFreshness{display:none!important}
+  #results{display:block!important;margin:0!important}.brand{font-size:16px!important;margin-bottom:10px}.release-badge{border:1px solid #98a2b3!important;background:#fff!important;color:#344054!important}
+  #resultSummary,#financialCockpit,#roadmap{display:block!important;break-inside:avoid}.finance-cockpit,.ar-roadmap,.ar-summary,.ar-next{box-shadow:none!important}.print-only{display:block!important}.finance-columns{grid-template-columns:1fr 1fr}.finance-grid{grid-template-columns:repeat(4,1fr)}
+  a{color:#000!important;text-decoration:none!important}
+}
+
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span class="release-badge">V1.4 FINAL</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V2.0 FINAL</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
-<p class="small" style="margin-top:-6px">Version 1.4 · moteur de précision renforcé · base embarquée · résultats à confirmer auprès de l’organisme instructeur.</p>
+<p class="small" style="margin-top:-6px">Version 2.0 · moteur V1.4 conservé · dossier de financement · sauvegarde multi-projets · export PDF · base embarquée.</p>
 
 <section class="card">
 <div class="ar-intro"><strong>🎯 Trouvez vos aides en moins d’une minute</strong><span><span class="ar-step">1</span>Entreprise &nbsp; <span class="ar-step">2</span>Projet &nbsp; <span class="ar-step">3</span>Aides à vérifier en priorité</span></div>
@@ -349,6 +370,20 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
       <label class="check-label"><input id="franchise" type="checkbox"> Projet en franchise / sous enseigne</label>
       <label class="check-label"><input id="jobSeeker" type="checkbox"> Porteur actuellement demandeur d’emploi</label>
 
+      <div class="precision-divider"><span>Plan de financement</span></div>
+
+      <div class="form-grid">
+        <div>
+          <label for="personalContribution">Apport personnel prévu (€)</label>
+          <input id="personalContribution" type="number" min="0" step="100" inputmode="decimal" placeholder="Ex. 5000">
+        </div>
+        <div>
+          <label for="bankAmount">Financement bancaire prévu (€)</label>
+          <input id="bankAmount" type="number" min="0" step="100" inputmode="decimal" placeholder="Ex. 15000">
+        </div>
+      </div>
+      <div class="field-help">Facultatif. Ces montants servent uniquement à calculer le reste à financer ; AideRadar ne les considère jamais comme accordés automatiquement.</div>
+
       <div class="advanced-facts">
         <label for="registeredRM">Immatriculation artisanale (RNE / ex-RM)</label>
         <select id="registeredRM">
@@ -455,20 +490,35 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   </div>
 </section>
 </form>
-<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V1.4…</div>
+<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V2.0…</div>
 <button type="button" id="retryDbBtn" class="retry-db" hidden>↻ Réessayer le chargement</button>
 <div id="baseFreshness" class="small" style="margin-top:7px"></div>
+</section>
+
+<section id="projectLibrary" class="card project-library">
+  <div class="project-library-head">
+    <div>
+      <h2>📁 Mes dossiers</h2>
+      <p>Retrouve ici les projets enregistrés sur cet appareil et relance leur analyse en un toucher.</p>
+    </div>
+  </div>
+  <div id="savedProjectList"></div>
 </section>
 
 <section id="results">
 <h2>Tes aides prioritaires</h2>
 <p class="small">AideRadar affiche d’abord les décisions utiles. Les détails techniques restent disponibles sans surcharger l’écran.</p>
 <div id="resultSummary"></div>
+<div id="financialCockpit"></div>
 <div id="roadmap"></div>
-<div id="planActions" style="display:none;gap:8px;margin:10px 0 14px;flex-wrap:wrap">
-  <button type="button" id="copyPlanBtn" style="flex:1;background:#101828">📋 Copier mon plan</button>
-  <button type="button" id="sharePlanBtn" style="flex:1;background:#175cd3">📤 Partager mon plan</button>
+<div id="planActions" class="v2-plan-actions" style="display:none;gap:8px;margin:10px 0 14px;flex-wrap:wrap">
+  <button type="button" id="saveProjectBtn" style="flex:1;background:#067647">💾 Enregistrer le dossier</button>
+  <button type="button" id="printPlanBtn" style="flex:1;background:#7f56d9">🧾 PDF / Imprimer</button>
+  <button type="button" id="copyPlanBtn" style="flex:1;background:#101828">📋 Copier</button>
+  <button type="button" id="sharePlanBtn" style="flex:1;background:#175cd3">📤 Partager</button>
+  <button type="button" id="exportProjectBtn" style="flex:1;background:#475467">⬇️ Export dossier</button>
 </div>
+<div id="projectSaveStatus" class="field-help" style="margin:-4px 0 12px"></div>
 
 <section id="trackingDashboard" class="tracking-dashboard">
   <div class="tracking-head">
@@ -3402,8 +3452,8 @@ let LAST_DIAGNOSTIC=null;
 function buildDiagnostic(profile, rows, territorialCount, scoredCount){
   return {
     app:"AideRadar",
-    version:"1.4.0",
-    engine:"aideradar-v1.4-final-purpose-evidence",
+    version:"2.0.0",
+    engine:"aideradar-v2-final-financing-dossier",
     generated_at:new Date().toISOString(),
     profile:{
       activity:profile.activity,
@@ -3632,7 +3682,7 @@ async function loadDB(){
  const retry=document.getElementById("retryDbBtn");
  if(btn){btn.disabled=true;btn.textContent="Chargement de la base…";}
  if(retry) retry.hidden=true;
- if(status) status.textContent="Chargement de la base intégrée V1.4…";
+ if(status) status.textContent="Chargement de la base intégrée V2.0…";
  try{
   const j=AIDERADAR_EMBEDDED_DB;
   DB=Array.isArray(j)?j:(j.aides||[]);
@@ -3980,4 +4030,156 @@ document.getElementById("radarForm").addEventListener("submit",async function(e)
  }
 });
 </script>
+
+<script>
+/* AideRadar V2.0 — couche dossier/financement, sans modifier le moteur d'éligibilité V1.4 */
+const V2_PROJECTS_KEY="aideradar:v2:projects";
+
+function v2Num(id){return Math.max(0,Number(document.getElementById(id)?.value||0)||0);}
+function v2DateFR(iso){
+  const s=String(iso||"").trim(); const m=s.match(/^(20\d{2})-(\d{2})-(\d{2})$/);
+  if(!m) return s||"—"; return `${m[3]}/${m[2]}/${m[1]}`;
+}
+function v2SourceStatus(a,nowValue){
+  const now=nowValue?new Date(nowValue):new Date(); now.setHours(0,0,0,0);
+  const raw=String(a?.fin||"").trim();
+  if(!raw) return {level:"warn",label:"Ouverture à vérifier",detail:"Aucune date de fin exploitable n’est enregistrée dans la base. Ouvre la source avant de déposer le dossier."};
+  const d=parseDashboardDate(raw);
+  if(!d) return {level:"warn",label:"Date à vérifier",detail:`Date enregistrée : ${raw}. Vérifie la fiche officielle.`};
+  d.setHours(23,59,59,999); const days=Math.ceil((d-now)/86400000);
+  if(days<0) return {level:"expired",label:"Échéance enregistrée dépassée",detail:`Fin enregistrée : ${v2DateFR(raw)}. Le dispositif peut avoir été reconduit : vérification officielle obligatoire.`};
+  if(days<=30) return {level:"warn",label:"Échéance proche",detail:`Date limite enregistrée : ${v2DateFR(raw)} (${days} jour(s) environ). Vérifie les crédits et la date réelle de dépôt.`};
+  return {level:"ok",label:"Date enregistrée encore valide",detail:`Date limite enregistrée : ${v2DateFR(raw)}. Ce statut vient de la base AideRadar et ne remplace pas la confirmation de l’organisme.`};
+}
+
+function v2FinancialModel(rows,p){
+  rows=rows||[]; p=p||{};
+  const road=buildRoadmap(rows,p);
+  const budget=Math.max(0,Number(p.budget||0));
+  const contribution=Math.max(0,Number(p.personalContribution??v2Num("personalContribution")));
+  const bank=Math.max(0,Number(p.bankAmount??v2Num("bankAmount")));
+  const prudentGrant=Math.max(0,Number(road.grantTotal||0));
+  const covered=Math.min(budget,contribution+bank+prudentGrant);
+  const remaining=Math.max(0,budget-covered);
+  const coverage=budget?Math.min(100,Math.round(covered/budget*100)):0;
+  const potentialGrant=Math.max(prudentGrant,Number(road.potentialGrantTotal||0));
+  const top=road.top||[];
+  const steps=[];
+  if(!contribution) steps.push({title:"Chiffrer l’apport",detail:"Renseigne l’apport personnel disponible pour rendre le plan de financement lisible."});
+  top.forEach(x=>{
+    const d=x.decision||{}; const action=(d.actions||[])[0];
+    if(action && steps.length<4) steps.push({title:clean(x.a.nom),detail:action,source:x.a.source||""});
+  });
+  if(!steps.length) steps.push({title:"Vérifier les résultats",detail:"Ouvre les fiches officielles et confirme les conditions obligatoires avant engagement."});
+  const docs=[]; const seen=new Set();
+  top.slice(0,3).forEach(x=>{
+    (buildDossierChecklist(x.a,x.r,p)||[]).forEach(it=>{
+      const label=String(it.label||it.title||it.text||"").trim(); if(!label) return;
+      const key=norm(label); if(seen.has(key)) return; seen.add(key); docs.push(label);
+    });
+  });
+  const sources=top.slice(0,3).map(x=>({name:clean(x.a.nom),...v2SourceStatus(x.a),source:x.a.source||""}));
+  return {budget,contribution,bank,prudentGrant,potentialGrant,covered,remaining,coverage,financingCount:road.financingCount||0,steps:steps.slice(0,4),docs:docs.slice(0,8),sources};
+}
+
+function renderV2FinancialCockpit(rows,p){
+  const el=document.getElementById("financialCockpit"); if(!el) return;
+  if(!rows?.length){el.innerHTML="";return;}
+  p.personalContribution=v2Num("personalContribution"); p.bankAmount=v2Num("bankAmount");
+  const m=v2FinancialModel(rows,p);
+  const grantLabel=m.prudentGrant?euro(m.prudentGrant):"0 €";
+  const potentialExtra=Math.max(0,m.potentialGrant-m.prudentGrant);
+  el.innerHTML=`<section class="finance-cockpit">
+    <h3>💼 Dossier de financement</h3>
+    <p>Vue prudente : seuls l’apport saisi, le financement bancaire saisi et les subventions suffisamment confirmées réduisent le reste à financer. Les prêts/avances repérés ne sont pas additionnés automatiquement.</p>
+    <div class="finance-grid">
+      <div class="finance-kpi"><strong>${euro(m.budget)}</strong><span>Budget projet</span></div>
+      <div class="finance-kpi"><strong>${euro(m.contribution)}</strong><span>Apport personnel</span></div>
+      <div class="finance-kpi covered"><strong>${grantLabel}</strong><span>Subvention prudente</span></div>
+      <div class="finance-kpi remaining"><strong>${euro(m.remaining)}</strong><span>Reste non couvert</span></div>
+    </div>
+    <div class="finance-progress"><span style="width:${m.coverage}%"></span></div>
+    <div class="finance-note"><strong>${m.coverage}% du budget couvert par les montants actuellement saisis/confirmés.</strong>${m.bank?` Financement bancaire saisi : ${euro(m.bank)}.`:""}${potentialExtra?` ${euro(potentialExtra)} de subvention supplémentaire potentielle reste hors base prudente tant que les conditions ne sont pas confirmées.`:""} ${m.financingCount} prêt(s)/avance(s)/garantie(s) peuvent être étudiés séparément.</div>
+    <div class="finance-columns">
+      <div class="finance-panel"><h4>🧭 Ordre recommandé</h4>${m.steps.map((x,i)=>`<div class="finance-step"><span class="finance-step-num">${i+1}</span><div><b>${esc(x.title)}</b><div>${esc(x.detail)}</div></div></div>`).join("")}</div>
+      <div class="finance-panel"><h4>📎 Pièces à préparer</h4><div class="aggregate-checklist">${m.docs.length?m.docs.map(x=>`<div class="aggregate-doc">${esc(x)}</div>`).join(""):`<div class="aggregate-doc">Pièces à confirmer selon les aides retenues.</div>`}</div></div>
+    </div>
+    <div class="finance-panel" style="margin-top:10px"><h4>🔎 Statut des sources prioritaires</h4>${m.sources.map(x=>`<div class="source-status ${x.level}"><b>${esc(x.name)} — ${esc(x.label)}</b><br>${esc(x.detail)}</div>`).join("")}</div>
+  </section>`;
+}
+
+function injectV2SourceStatuses(rows){
+  setTimeout(()=>{
+    (rows||[]).forEach(x=>{
+      const article=document.querySelector(`[data-result-key="${CSS.escape(trackingKey(x.a))}"]`); if(!article||article.querySelector(".source-status.v2-inline")) return;
+      const st=v2SourceStatus(x.a); const box=document.createElement("div"); box.className=`source-status ${st.level} v2-inline`; box.innerHTML=`<b>${esc(st.label)}</b><br>${esc(st.detail)}`;
+      const link=article.querySelector(".source"); if(link) article.insertBefore(box,link); else article.appendChild(box);
+    });
+  },0);
+}
+
+function v2ProjectFingerprint(state){
+  const base=[state.activityDetail,state.dept,state.project,state.projectDetail,state.budget].map(x=>norm(String(x||""))).join("|");
+  let h=2166136261; for(let i=0;i<base.length;i++){h^=base.charCodeAt(i);h=Math.imul(h,16777619);} return `p${(h>>>0).toString(36)}`;
+}
+function loadV2Projects(){try{return JSON.parse(localStorage.getItem(V2_PROJECTS_KEY)||"[]")||[];}catch(_){return []}}
+function saveV2Projects(list){try{localStorage.setItem(V2_PROJECTS_KEY,JSON.stringify(list||[]));}catch(_){}}
+function currentV2ProjectSnapshot(){
+  const state=currentProfileFormState();
+  state.personalContribution=document.getElementById("personalContribution")?.value||"";
+  state.bankAmount=document.getElementById("bankAmount")?.value||"";
+  const p=LAST_RESULT_PROFILE||{}; const rows=LAST_RESULT_ROWS||[]; const fm=v2FinancialModel(rows,{...p,personalContribution:Number(state.personalContribution||0),bankAmount:Number(state.bankAmount||0)});
+  const id=v2ProjectFingerprint(state);
+  return {id,name:`${state.activityDetail||"Projet"} · ${WIZARD_PROJECT_LABELS[state.project]||state.project||"Projet"} · ${normalizeDepartment(state.dept)}`,saved_at:new Date().toISOString(),profile:state,financial:{budget:fm.budget,contribution:fm.contribution,bank:fm.bank,prudentGrant:fm.prudentGrant,remaining:fm.remaining,coverage:fm.coverage},top_aids:rows.slice(0,3).map(x=>({name:clean(x.a.nom),source:x.a.source||"",readiness:decisionModel(x.a,x.r,p,rows.indexOf(x)).readiness}))};
+}
+function renderV2ProjectLibrary(){
+  const el=document.getElementById("savedProjectList"); if(!el) return; const list=loadV2Projects().sort((a,b)=>String(b.saved_at).localeCompare(String(a.saved_at)));
+  if(!list.length){el.innerHTML='<div class="saved-project-empty">Aucun dossier enregistré pour l’instant. Lance une analyse puis touche « Enregistrer le dossier ».</div>';return;}
+  el.innerHTML=list.map(x=>`<div class="saved-project-item" data-project-id="${esc(x.id)}"><div><div class="saved-project-title">${esc(x.name)}</div><div class="saved-project-meta">Enregistré le ${new Date(x.saved_at).toLocaleDateString("fr-FR")} · budget ${euro(Number(x.financial?.budget||x.profile?.budget||0))}${x.financial?` · reste non couvert ${euro(Number(x.financial.remaining||0))}`:""}</div></div><div class="saved-project-actions"><button type="button" class="saved-project-load" data-load-project="${esc(x.id)}">Ouvrir</button><button type="button" class="saved-project-delete" data-delete-project="${esc(x.id)}">Supprimer</button></div></div>`).join("");
+}
+function saveCurrentV2Project(){
+  if(!LAST_RESULT_PROFILE){const s=document.getElementById("projectSaveStatus");if(s)s.textContent="Lance d’abord une analyse.";return;}
+  const snap=currentV2ProjectSnapshot(); const list=loadV2Projects(); const idx=list.findIndex(x=>x.id===snap.id); if(idx>=0) list[idx]=snap; else list.unshift(snap); saveV2Projects(list.slice(0,25)); renderV2ProjectLibrary();
+  const s=document.getElementById("projectSaveStatus"); if(s){s.className="field-help saved-ok";s.textContent="✅ Dossier enregistré sur cet appareil.";}
+}
+function loadV2Project(id){
+  const x=loadV2Projects().find(p=>p.id===id); if(!x) return; restoreProfileFormState(x.profile||{});
+  const pc=document.getElementById("personalContribution"); if(pc) pc.value=x.profile?.personalContribution||""; const ba=document.getElementById("bankAmount"); if(ba) ba.value=x.profile?.bankAmount||""; maybeOpenPrecision(x.profile||{});
+  setWizardStep(3,{skipValidation:true}); renderProfileReview(); setTimeout(()=>document.getElementById("radarForm")?.requestSubmit?.(),80);
+}
+function deleteV2Project(id){saveV2Projects(loadV2Projects().filter(x=>x.id!==id));renderV2ProjectLibrary();}
+
+function v2DossierExport(){
+  if(!LAST_RESULT_PROFILE) return; const snap=currentV2ProjectSnapshot();
+  const payload={app:"AideRadar",version:"2.0.0",exported_at:new Date().toISOString(),...snap,roadmap:LAST_ROADMAP_TEXT,diagnostic:LAST_DIAGNOSTIC||null};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`aideradar-dossier-${snap.id}.json`; document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function v2Print(){if(!LAST_RESULT_PROFILE)return;window.print();}
+
+// Extend current profile persistence without touching the existing handler.
+const _v2CurrentProfileFormState=currentProfileFormState;
+currentProfileFormState=function(){const o=_v2CurrentProfileFormState();o.personalContribution=document.getElementById("personalContribution")?.value||"";o.bankAmount=document.getElementById("bankAmount")?.value||"";return o;};
+const _v2WizardDraft=wizardDraftFromForm;
+wizardDraftFromForm=function(){const d=_v2WizardDraft();d.personalContribution=v2Num("personalContribution");d.bankAmount=v2Num("bankAmount");return d;};
+const _v2OptionalPrecisionCount=optionalPrecisionCount;
+optionalPrecisionCount=function(d){return _v2OptionalPrecisionCount(d)+(Number(d?.personalContribution||0)>0?1:0)+(Number(d?.bankAmount||0)>0?1:0);};
+
+// Extend diagnostic with the financing dossier.
+const _v2BuildDiagnostic=buildDiagnostic;
+buildDiagnostic=function(profile,rows,territorialCount,scoredCount){profile.personalContribution=v2Num("personalContribution");profile.bankAmount=v2Num("bankAmount");const d=_v2BuildDiagnostic(profile,rows,territorialCount,scoredCount);d.profile.personalContribution=profile.personalContribution;d.profile.bankAmount=profile.bankAmount;d.financial_dossier=v2FinancialModel(rows,profile);return d;};
+
+// Hook the existing renderer so every normal analysis gets the V2 cockpit.
+const _v2RenderRoadmap=renderRoadmap;
+renderRoadmap=function(rows,p){p.personalContribution=v2Num("personalContribution");p.bankAmount=v2Num("bankAmount");_v2RenderRoadmap(rows,p);renderV2FinancialCockpit(rows,p);injectV2SourceStatuses(rows);};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  renderV2ProjectLibrary();
+  document.getElementById("saveProjectBtn")?.addEventListener("click",saveCurrentV2Project);
+  document.getElementById("printPlanBtn")?.addEventListener("click",v2Print);
+  document.getElementById("exportProjectBtn")?.addEventListener("click",v2DossierExport);
+  document.getElementById("savedProjectList")?.addEventListener("click",e=>{const l=e.target.closest?.("[data-load-project]");if(l)loadV2Project(l.dataset.loadProject);const d=e.target.closest?.("[data-delete-project]");if(d)deleteV2Project(d.dataset.deleteProject);});
+  ["personalContribution","bankAmount"].forEach(id=>document.getElementById(id)?.addEventListener("input",()=>{if(LAST_RESULT_PROFILE&&LAST_RESULT_ROWS?.length){LAST_RESULT_PROFILE.personalContribution=v2Num("personalContribution");LAST_RESULT_PROFILE.bankAmount=v2Num("bankAmount");renderV2FinancialCockpit(LAST_RESULT_ROWS,LAST_RESULT_PROFILE);}}));
+});
+</script>
+
 </body></html>
