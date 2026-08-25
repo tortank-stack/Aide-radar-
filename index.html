@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>AideRadar — V3.0 CONNECTÉE</title>
+<title>AideRadar — V4.0 PILOTE</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -238,13 +238,23 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 .live-update-note{font-size:11px;color:#475467;margin-top:5px;padding-top:5px;border-top:1px dashed #e4e7ec}
 @media(max-width:520px){.live-sync-btn{width:100%!important}.live-sync-head .spacer{display:none}}
 
+
+/* V4 pilot / trust layer */
+.v4-trust-summary{margin:10px 0 14px;border:1px solid #d1e9ff;background:linear-gradient(180deg,#eff8ff,#fff);border-radius:16px;padding:13px}
+.v4-trust-summary h3{margin:0 0 5px;font-size:15px}.v4-trust-summary p{margin:0;color:#475467;font-size:12px;line-height:1.5}
+.v4-trust-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.v4-trust-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;background:#f2f4f7;color:#475467;font-size:10px;font-weight:850}
+.v4-trust-chip.good{background:#ecfdf3;color:#067647}.v4-trust-chip.warn{background:#fffaeb;color:#b54708}.v4-trust-chip.bad{background:#fef3f2;color:#b42318}
+.v4-result-trust{margin-top:9px;padding:8px 9px;border:1px solid #e4e7ec;border-radius:10px;background:#f9fafb}.v4-result-trust-title{font-size:10px;font-weight:900;color:#344054;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}.v4-result-trust .v4-trust-chips{margin-top:0}
+.v4-pilot{margin:14px 0;border:1px solid #e4e7ec;border-radius:16px;padding:13px;background:#fff}.v4-pilot h3{margin:0 0 5px;font-size:15px}.v4-pilot p{margin:0;color:#667085;font-size:12px;line-height:1.5}.v4-pilot-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.v4-pilot-actions button{width:auto!important;min-height:38px!important;padding:8px 11px!important;margin:0!important;font-size:12px!important}.v4-pilot-status{font-size:11px;color:#067647;font-weight:750;margin-top:7px}.v4-privacy{margin:12px 0 0;padding-top:10px;border-top:1px dashed #e4e7ec;color:#667085;font-size:11px;line-height:1.45}
+@media(max-width:520px){.v4-pilot-actions button{width:100%!important}}
+
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span class="release-badge">V3.0 CONNECTÉE</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V4.0 PILOTE</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
-<p class="small" style="margin-top:-6px">Version 3.0 · moteur V1.4 conservé · synchronisation open data · détection des changements · dossier de financement · sauvegarde multi-projets.</p>
+<p class="small" style="margin-top:-6px">Version 4.0 · moteur V1.4 conservé · traçabilité des données · synchronisation open data · dossier de financement · mode pilote.</p>
 
 <section class="card">
 <div class="ar-intro"><strong>🎯 Trouvez vos aides en moins d’une minute</strong><span><span class="ar-step">1</span>Entreprise &nbsp; <span class="ar-step">2</span>Projet &nbsp; <span class="ar-step">3</span>Aides à vérifier en priorité</span></div>
@@ -503,7 +513,7 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
   </div>
 </section>
 </form>
-<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V3.0…</div>
+<div id="status" class="status" aria-live="polite">Chargement de la base intégrée V4.0…</div>
 <button type="button" id="retryDbBtn" class="retry-db" hidden>↻ Réessayer le chargement</button>
 <div id="baseFreshness" class="small" style="margin-top:7px"></div>
 <div id="liveSyncPanel" class="live-sync-panel" aria-live="polite">
@@ -535,6 +545,17 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 <div id="resultSummary"></div>
 <div id="financialCockpit"></div>
 <div id="roadmap"></div>
+<div id="v4TrustSummary"></div>
+<section id="v4PilotPanel" class="v4-pilot" style="display:none">
+  <h3>🧪 Mode pilote</h3>
+  <p>Si un résultat paraît incohérent, génère un rapport technique en un toucher. Il contient le profil, les aides affichées et l’état de synchronisation, sans mot de passe ni donnée bancaire.</p>
+  <div class="v4-pilot-actions">
+    <button type="button" id="v4CopyIssueBtn" style="background:#101828">📋 Copier le rapport d’anomalie</button>
+    <button type="button" id="v4ExportIssueBtn" style="background:#475467">⬇️ Exporter le rapport</button>
+  </div>
+  <div id="v4PilotStatus" class="v4-pilot-status"></div>
+  <div class="v4-privacy"><b>Confidentialité :</b> les dossiers sont enregistrés dans le navigateur. La synchronisation télécharge les données publiques d’aides. Les fonctions de localisation peuvent interroger des services géographiques publics uniquement si elles sont utilisées.</div>
+</section>
 <div id="planActions" class="v2-plan-actions" style="display:none;gap:8px;margin:10px 0 14px;flex-wrap:wrap">
   <button type="button" id="saveProjectBtn" style="flex:1;background:#067647">💾 Enregistrer le dossier</button>
   <button type="button" id="printPlanBtn" style="flex:1;background:#7f56d9">🧾 PDF / Imprimer</button>
@@ -3707,7 +3728,7 @@ async function loadDB(){
  const retry=document.getElementById("retryDbBtn");
  if(btn){btn.disabled=true;btn.textContent="Chargement de la base…";}
  if(retry) retry.hidden=true;
- if(status) status.textContent="Chargement de la base intégrée V3.0…";
+ if(status) status.textContent="Chargement de la base intégrée V4.0…";
  try{
   const j=AIDERADAR_EMBEDDED_DB;
   DB=Array.isArray(j)?j:(j.aides||[]);
@@ -4209,8 +4230,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
 <script>
-/* AideRadar V3.0 — couche connectée, avec repli intégral sur la base embarquée */
-const V3_VERSION="3.0.0";
+/* AideRadar V3/V4 — couche connectée, avec repli intégral sur la base embarquée */
+const V3_VERSION="4.0.0";
 const V3_DATASET_API="https://www.data.gouv.fr/api/1/datasets/?q=Aides%20entreprises&page_size=20";
 const V3_FALLBACK_CSV="https://www.data.gouv.fr/api/1/datasets/r/61fb1ddf-b457-4884-afb3-7855f77591de";
 const V3_CACHE_DB="aideradar-v3-cache";
@@ -4327,6 +4348,98 @@ document.addEventListener("DOMContentLoaded",()=>{
   setTimeout(()=>v3SyncNow(false),150);
   if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 });
+</script>
+
+<script>
+/* AideRadar V4.0 — traçabilité + mode pilote */
+const V4_VERSION="4.0.0";
+function v4DateTime(iso){
+  if(!iso)return ""; const d=new Date(iso); if(Number.isNaN(d.getTime()))return String(iso);
+  return d.toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function v4DateOnly(iso){
+  if(!iso)return ""; const d=new Date(iso); if(Number.isNaN(d.getTime()))return String(iso);
+  return d.toLocaleDateString("fr-FR");
+}
+function v4DeadlineChip(a){
+  const raw=String(a?.fin||"").trim(); if(!raw)return {text:"Échéance non renseignée",kind:"warn"};
+  const d=parseDashboardDate(raw); if(!d)return {text:`Date à confirmer · ${raw}`,kind:"warn"};
+  d.setHours(23,59,59,999); const days=Math.ceil((d-new Date())/86400000);
+  if(days<0)return {text:`Échéance base dépassée · ${v2DateFR(raw)}`,kind:"bad"};
+  if(days<=30)return {text:`Échéance proche · ${v2DateFR(raw)}`,kind:"warn"};
+  return {text:`Échéance base · ${v2DateFR(raw)}`,kind:"good"};
+}
+function v4TrustForAid(a){
+  const meta=window.AIDERADAR_V3_META||{}; const chips=[];
+  const connected=/^connected/.test(String(meta.mode||""));
+  if(connected&&meta.lastSync) chips.push({text:`Flux public recoupé · ${v4DateOnly(meta.lastSync)}`,kind:"good"});
+  else chips.push({text:"Flux public non recoupé sur cette session",kind:"warn"});
+  if(a?._live?.modified) chips.push({text:`Fiche flux modifiée · ${v4DateOnly(a._live.modified)}`,kind:"good"});
+  else if(a?._live?.validation) chips.push({text:`Fiche flux validée · ${v4DateOnly(a._live.validation)}`,kind:"good"});
+  chips.push(v4DeadlineChip(a));
+  if(a?.source) chips.push({text:"Lien financeur disponible",kind:"good"}); else chips.push({text:"Lien financeur absent",kind:"warn"});
+  return chips;
+}
+function v4ChipHtml(c){return `<span class="v4-trust-chip ${c.kind||""}">${c.kind==="good"?"✓":c.kind==="bad"?"!":"•"} ${esc(c.text)}</span>`}
+function renderV4TrustSummary(rows){
+  const el=document.getElementById("v4TrustSummary"); if(!el)return; rows=rows||[]; if(!rows.length){el.innerHTML="";return;}
+  const meta=window.AIDERADAR_V3_META||{}; const connected=/^connected/.test(String(meta.mode||""));
+  const withSource=rows.filter(x=>x.a?.source).length, withDeadline=rows.filter(x=>String(x.a?.fin||"").trim()).length;
+  const chips=[
+    {text:connected&&meta.lastSync?`Base publique synchronisée · ${v4DateTime(meta.lastSync)}`:"Base embarquée · synchronisation à confirmer",kind:connected?"good":"warn"},
+    {text:`${withSource}/${rows.length} lien(s) financeur`,kind:withSource===rows.length?"good":"warn"},
+    {text:`${withDeadline}/${rows.length} échéance(s) renseignée(s)`,kind:withDeadline===rows.length?"good":"warn"}
+  ];
+  el.innerHTML=`<section class="v4-trust-summary"><h3>🛡️ Traçabilité des résultats</h3><p>AideRadar distingue la donnée publique recoupée de la confirmation finale par l’organisme. Une synchronisation réussie confirme que la fiche du flux Aides‑entreprises a été recoupée ; elle ne signifie pas qu’un financement est accordé ni que la page du financeur a été relue aujourd’hui.</p><div class="v4-trust-chips">${chips.map(v4ChipHtml).join("")}</div></section>`;
+}
+function injectV4ResultTrust(rows){
+  setTimeout(()=>{(rows||[]).forEach(x=>{
+    const article=document.querySelector(`[data-result-key="${CSS.escape(trackingKey(x.a))}"]`); if(!article||article.querySelector(".v4-result-trust"))return;
+    const box=document.createElement("div"); box.className="v4-result-trust"; box.innerHTML=`<div class="v4-result-trust-title">Traçabilité</div><div class="v4-trust-chips">${v4TrustForAid(x.a).map(v4ChipHtml).join("")}</div>`;
+    const link=article.querySelector(".source"); if(link)article.insertBefore(box,link); else article.appendChild(box);
+  })},0);
+}
+function v4IssuePayload(){
+  const p=LAST_RESULT_PROFILE||{}; const rows=LAST_RESULT_ROWS||[];
+  return {
+    app:"AideRadar",version:V4_VERSION,created_at:new Date().toISOString(),
+    profile:{activity:p.activity||"",activityDetail:p.activityDetail||"",companyStatus:p.companyStatus||"",companyAge:p.companyAge||"",department:p.dept||p.department||"",employees:p.employees||"",project:p.project||"",projectDetail:p.projectDetail||"",budget:Number(p.budget||0),postalCode:p.postalCode||"",commune:p.commune||""},
+    sync:{...(window.AIDERADAR_V3_META||{})},
+    results:rows.slice(0,12).map((x,i)=>{const d=decisionModel(x.a,x.r,p,i); const e=eligibilitySummary(x.a,x.r,p); return {id:x.a.id||"",name:clean(x.a.nom),rank:i+1,score:x.r?.score??null,preparation:d?.readiness??null,eligibility:e?.state||"",reasons:x.r?.reasons||[],penalties:x.r?.penalties||[],source:x.a.source||"",deadline:x.a.fin||""}}),
+    note:"Décrire ci-dessous ce qui paraît incorrect : "
+  };
+}
+async function v4CopyIssue(){
+  const txt=JSON.stringify(v4IssuePayload(),null,2); const ok=await copyTextSafe(txt,document.getElementById("v4CopyIssueBtn"),"✅ Rapport copié");
+  const st=document.getElementById("v4PilotStatus"); if(st)st.textContent=ok===false?"Impossible de copier automatiquement : utilise l’export.":"Rapport copié. Il peut être envoyé tel quel pour reproduire le problème.";
+}
+function v4ExportIssue(){
+  const payload=v4IssuePayload(),blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=`aideradar-anomalie-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const st=document.getElementById("v4PilotStatus"); if(st)st.textContent="Rapport d’anomalie exporté.";
+}
+const _v4BuildRoadmapText=buildRoadmapText;
+buildRoadmapText=function(rows,p){
+  let txt=_v4BuildRoadmapText(rows,p); const meta=window.AIDERADAR_V3_META||{};
+  const connected=/^connected/.test(String(meta.mode||""));
+  const trace=connected&&meta.lastSync
+    ? `Données publiques Aides-entreprises recoupées le ${v4DateTime(meta.lastSync)}. Les pages des financeurs restent à confirmer avant dépôt.`
+    : `Synchronisation publique non confirmée sur cette session : résultats calculés sur la base embarquée. Vérifier les pages des financeurs avant dépôt.`;
+  return `${txt}\n\nAideRadar — Traçabilité\n${trace}`;
+};
+
+const _v4RenderRoadmap=renderRoadmap;
+renderRoadmap=function(rows,p){
+  _v4RenderRoadmap(rows,p);
+  renderV4TrustSummary(rows); injectV4ResultTrust(rows);
+  const panel=document.getElementById("v4PilotPanel"); if(panel)panel.style.display=rows?.length?"block":"none";
+};
+// Le V3 peut relancer l’analyse après synchronisation ; le rendu V4 se remet donc à jour automatiquement.
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("v4CopyIssueBtn")?.addEventListener("click",v4CopyIssue);
+  document.getElementById("v4ExportIssueBtn")?.addEventListener("click",v4ExportIssue);
+});
+window.AideRadarV4={version:V4_VERSION,trustForAid:v4TrustForAid,issuePayload:v4IssuePayload};
 </script>
 
 </body></html>
