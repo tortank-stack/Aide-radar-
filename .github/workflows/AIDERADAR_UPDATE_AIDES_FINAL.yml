@@ -1,0 +1,69 @@
+name: Update AideRadar data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download and rebuild AideRadar database
+        run: python update_aides.py
+
+      - name: Validate aides_v15.json
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("aides_v15.json")
+          if not path.exists():
+              raise SystemExit("aides_v15.json introuvable")
+
+          data = json.loads(path.read_text(encoding="utf-8"))
+          aides = data.get("aides", []) if isinstance(data, dict) else data
+
+          if not isinstance(aides, list):
+              raise SystemExit("Format JSON invalide : liste d'aides attendue")
+
+          if len(aides) < 1500:
+              raise SystemExit(f"Base trop petite : {len(aides)} aides")
+
+          if isinstance(data, dict) and "count" in data and data["count"] != len(aides):
+              raise SystemExit(
+                  f"Compteur incohérent : count={data['count']} / aides={len(aides)}"
+              )
+
+          print(f"JSON valide : {len(aides)} aides")
+          PY
+
+      - name: Run AideRadar regression tests
+        run: python regression_test.py
+
+      - name: Commit database only when data changed
+        run: |
+          if git diff --quiet -- aides_v15.json; then
+            echo "Aucun changement dans aides_v15.json"
+            exit 0
+          fi
+
+          git config user.name "AideRadar Bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add aides_v15.json
+          git commit -m "chore: update AideRadar database"
+          git push
