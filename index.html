@@ -4628,7 +4628,6 @@ window.AIDERADAR_PILOT = window.AIDERADAR_PILOT || {
        headers:{
          "Content-Type":"application/json",
          "apikey":cfg.publishableKey,
-         "Authorization":"Bearer "+cfg.publishableKey,
          "Prefer":"return=minimal"
        },
        body:JSON.stringify(currentPayload(overall))
