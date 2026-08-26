@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>AideRadar — V5.2 BÊTA PUBLIQUE</title>
+<title>AideRadar — V6.0 STABLE CANDIDATE</title>
 <style>
 :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--p:#3563e9;--line:#e4e7ec;--good:#067647;--goodbg:#ecfdf3;--blue:#175cd3;--bluebg:#eff8ff;--warn:#b54708;--warnbg:#fffaeb}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -273,10 +273,10 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 </style>
 </head>
 <body><main class="wrap">
-<div class="brand"><b>€</b>AideRadar <span class="release-badge">V5.2 BÊTA PUBLIQUE</span></div>
+<div class="brand"><b>€</b>AideRadar <span class="release-badge">V6.0 STABLE CANDIDATE</span></div>
 <h1>Trouvez les aides adaptées à votre entreprise.</h1>
 <p class="lead">Décris ton entreprise et ton projet. AideRadar élimine les aides incompatibles, puis te donne les démarches prioritaires.</p>
-<p class="small" style="margin-top:-6px">Version 5.2 · moteur d’éligibilité éprouvé · données publiques synchronisées · dossier de financement · bêta publique.</p>
+<p class="small" style="margin-top:-6px">Version 6.0 · moteur d’éligibilité éprouvé · données publiques synchronisées · dossier de financement · bêta publique.</p>
 
 <section class="v5-public-card" id="v5PublicIntro">
   <h2>Un plan d’aides exploitable, pas une liste de liens</h2>
@@ -632,7 +632,7 @@ body{background:#f5f7fb}.wrap{max-width:760px;margin:auto;padding:12px 12px 40px
 
 <footer class="v5-footer">
   <div class="v5-footer-top">
-    <div><strong>AideRadar · V5.2 BÊTA PUBLIQUE</strong><p>Service d’aide à l’orientation vers les dispositifs de financement. Les résultats sont indicatifs : l’éligibilité et la disponibilité budgétaire restent à confirmer auprès de chaque organisme financeur.</p></div>
+    <div><strong>AideRadar · V6.0 STABLE CANDIDATE</strong><p>Service d’aide à l’orientation vers les dispositifs de financement. Les résultats sont indicatifs : l’éligibilité et la disponibilité budgétaire restent à confirmer auprès de chaque organisme financeur.</p></div>
     <div class="v5-footer-links">
       <button type="button" data-v5-modal="faq">FAQ</button>
       <button type="button" data-v5-modal="privacy">Confidentialité</button>
@@ -1458,7 +1458,7 @@ function parseOwnerAgeRequirement(a){
 function ownerAgeGate(a,p){
   const req=parseOwnerAgeRequirement(a);
   if(req.min===null && req.max===null) return {exclude:false,req};
-  if(!p.ownerAge) return {exclude:false,req,unknown:true};
+  if(!p.ownerAge) return {exclude:true,req,unknown:true,reason:"condition d’âge non renseignée"};
   if(req.min!==null && p.ownerAge<req.min) return {exclude:true,req,reason:`âge minimum ${req.min} ans`};
   if(req.max!==null && p.ownerAge>req.max) return {exclude:true,req,reason:`âge maximum ${req.max} ans`};
   return {exclude:false,req};
@@ -3120,6 +3120,8 @@ function prudentGrantEligible(x,p){
   if(!x || !x.decision || x.decision.exactGrant<=0) return false;
   const es=eligibilitySummary(x.a,x.r,p);
   if(es.state==="no") return false;
+  const ageGate=ownerAgeGate(x.a,p);
+  if(ageGate.unknown) return false;
   const pending=(es.checks||[]).filter(c=>c.state==="check");
   // Operational precautions do not make the aid itself ineligible.
   // Critical beneficiary/territory/finance conditions do.
@@ -3135,6 +3137,7 @@ function buildFinancingPath(rows,p){
 
   const usable=all.filter(x=>x.decision.readiness>=55 && x.decision.priority!=="later");
   const grants=usable.filter(x=>x.kind==="grant");
+  const verifiedGrants=grants.filter(x=>prudentGrantEligible(x,p));
   const loans=usable.filter(x=>x.kind==="loan"||x.kind==="guarantee");
   const exemptions=usable.filter(x=>x.kind==="exemption");
   const support=usable.filter(x=>x.kind==="support");
@@ -3176,13 +3179,13 @@ function buildFinancingPath(rows,p){
     .sort((a,b)=>b.decision.readiness-a.decision.readiness||a.index-b.index)[0];
   add(urgentPreSpend,"À sécuriser avant toute dépense");
 
-  if(grants[0]) add(grants[0],prudentGrantEligible(grants[0],p)?"Subvention principale":"Subvention potentielle à vérifier");
+  if(verifiedGrants[0]) add(verifiedGrants[0],"Subvention principale");
   add(loans[0],"Financement complémentaire");
   add(exemptions[0],"Exonération / avantage complémentaire");
   add(support[0],"Accompagnement utile");
 
   // A second exact grant is shown only as an alternative/to verify, never added automatically.
-  const secondGrant=grants.find(x=>!used.has(trackingKey(x.a)));
+  const secondGrant=verifiedGrants.find(x=>!used.has(trackingKey(x.a)));
   if(secondGrant) add(secondGrant,"Aide supplémentaire à vérifier");
 
   // Financial headline is deliberately conservative:
@@ -3223,7 +3226,7 @@ function financingPathText(path){
   });
   if(path.primaryGrant) lines.push(`Base prudente de subvention chiffrable : jusqu’à ${euro(path.primaryGrant)}.`);
   if(path.otherExactGrantCount) lines.push(`${path.otherExactGrantCount} autre(s) subvention(s) chiffrable(s) éligibles sont à vérifier séparément avant de les additionner.`);
-  if(path.unverifiedExactGrantCount) lines.push(`${path.unverifiedExactGrantCount} montant(s) de subvention sont repérés mais exclus de la base prudente tant que l’éligibilité n’est pas suffisamment confirmée.`);
+  if(path.unverifiedExactGrantCount) lines.push(`${path.unverifiedExactGrantCount} subvention(s) potentielle(s) ne sont pas recommandées tant qu’une condition obligatoire (âge, statut, territoire ou financement) reste inconnue.`);
   if(path.financingCount) lines.push(`${path.financingCount} prêt(s)/garantie(s) repérés au total${path.highlightedFinancingCount?`, dont ${path.highlightedFinancingCount} mis en avant dans ce parcours`:""}. Ils ne sont pas comptés comme subventions.`);
   if(path.needsCumulationCheck) lines.push("Vérifier les règles de cumul avant de considérer plusieurs aides comme compatibles.");
   return lines.join("\n");
