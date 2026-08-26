@@ -1,0 +1,39 @@
+name: AideRadar V5.1 - synchronisation et tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 4 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Mettre à jour les aides
+        run: python tools/sync_aides.py --db aides.json
+
+      - name: Contrôles bloquants
+        run: |
+          python tools/quality_check.py index.html aides.json
+          node tools/regression_test.js index.html aides.json
+
+      - name: Publier uniquement si les contrôles passent
+        run: |
+          if git diff --quiet -- aides.json; then
+            echo "Aucun changement"
+            exit 0
+          fi
+          git config user.name "AideRadar Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add aides.json
+          git commit -m "chore: synchronise les aides publiques"
+          git push
