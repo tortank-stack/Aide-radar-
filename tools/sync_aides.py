@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULT_URL='https://www.data.gouv.fr/api/1/datasets/r/61fb1ddf-b457-4884-afb3-7855f77591de'
-DB_RE=re.compile(r'const AIDERADAR_EMBEDDED_DB=(\{.*?\});\n\nasync function loadDB\(\)\{',re.S)
 URL_RE=re.compile(r'https?://[^\s"\'<>;,\\]+',re.I)
 
 def norm(s):
@@ -13,7 +12,7 @@ def norm(s):
     return re.sub(r'\s+',' ',s).strip()
 
 def download(url):
-    req=urllib.request.Request(url,headers={'User-Agent':'AideRadar-V3/3.0 (+GitHub Pages sync)'})
+    req=urllib.request.Request(url,headers={'User-Agent':'AideRadar-V5.1 (+GitHub Pages sync)'})
     with urllib.request.urlopen(req,timeout=90) as r:return r.read()
 
 def decode(blob):
@@ -45,32 +44,22 @@ def isoish(v):
 
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument('--html',default='index.html')
+    ap.add_argument('--db',default='aides.json')
     ap.add_argument('--source',default=DEFAULT_URL)
     ap.add_argument('--min-match',type=int,default=1500)
     args=ap.parse_args()
-    path=Path(args.html)
-    text=path.read_text(encoding='utf-8')
-    m=DB_RE.search(text)
-    if not m:raise RuntimeError('Base embarquée introuvable')
-    payload=json.loads(m.group(1)); aids=payload.get('aides',[])
+    path=Path(args.db)
+    payload=json.loads(path.read_text(encoding='utf-8'))
+    aids=payload.get('aides',[]) if isinstance(payload,dict) else payload
     if len(aids)<2000:raise RuntimeError(f'Base locale trop petite: {len(aids)}')
     by_id={str(a.get('id') or a.get('id_aid') or ''):a for a in aids if (a.get('id') or a.get('id_aid'))}
     raw=decode(download(args.source)); reader=csv.DictReader(io.StringIO(raw),dialect=dialect(raw))
-    matched=changed=disabled=0; newest=''
-    now=datetime.now(timezone.utc).isoformat()
+    matched=changed=disabled=0; newest=''; now=datetime.now(timezone.utc).isoformat()
     for row in reader:
         aid_id=pick(row,'id_aid','id aide','id')
         if not aid_id or aid_id not in by_id:continue
         matched+=1;a=by_id[aid_id];diff=False
-        vals={
-            'nom':pick(row,'aid_nom','nom'),
-            'objet':pick(row,'aid_objet','objet'),
-            'operations':pick(row,'aid_operations_el','operations eligibles','opérations éligibles'),
-            'conditions':pick(row,'aid_conditions','conditions'),
-            'montant':pick(row,'aid_montant','montant'),
-            'benef':pick(row,'aid_benef','beneficiaires','bénéficiaires'),
-        }
+        vals={'nom':pick(row,'aid_nom','nom'),'objet':pick(row,'aid_objet','objet'),'operations':pick(row,'aid_operations_el','operations eligibles','opérations éligibles'),'conditions':pick(row,'aid_conditions','conditions'),'montant':pick(row,'aid_montant','montant'),'benef':pick(row,'aid_benef','beneficiaires','bénéficiaires')}
         for k,v in vals.items():
             if v and str(a.get(k,'')).strip()!=v:a[k]=v;diff=True
         src=first_url(pick(row,'complements_sources','aid_url','url_aide','url','source'))
@@ -80,21 +69,21 @@ def main():
         status=pick(row,'status','statut'); hidden=bool(status and status!='1')
         if a.get('_live_hidden',False)!=hidden:a['_live_hidden']=hidden;diff=True
         if hidden:disabled+=1
-        modified=pick(row,'horodatage','date modification')
-        validation=pick(row,'aid_validation','date validation')
+        modified=pick(row,'horodatage','date modification'); validation=pick(row,'aid_validation','date validation')
         a['_live']={'modified':modified,'validation':validation,'status':status,'syncedAt':now}
         if modified and modified>newest:newest=modified
         if diff:changed+=1
     if matched<args.min_match:raise RuntimeError(f'Correspondance insuffisante: {matched}/{len(aids)}')
     ids=[str(a.get('id') or a.get('id_aid') or '') for a in aids]
     if len(ids)!=len(set(ids)):raise RuntimeError('IDs dupliqués après mise à jour')
-    payload['updated']=datetime.now(timezone.utc).date().isoformat()
-    payload['generated_at']=now
-    payload['source']='Aides entreprises - DGE / ISM via data.gouv.fr'
-    payload['source_url']=args.source
+    if isinstance(payload,list): payload={'aides':aids}
+    payload['updated']=datetime.now(timezone.utc).date().isoformat();payload['generated_at']=now
+    payload['count']=len(aids);payload['source']='Aides entreprises - DGE / ISM via data.gouv.fr';payload['source_url']=args.source
     payload['live_sync']={'matched':matched,'changed':changed,'disabled':disabled,'source_max_modified':newest,'synced_at':now}
-    replacement='const AIDERADAR_EMBEDDED_DB='+json.dumps(payload,ensure_ascii=False,separators=(',',':'))+';\n\nasync function loadDB(){'
-    new=DB_RE.sub(lambda _:replacement,text,count=1)
+    new=json.dumps(payload,ensure_ascii=False,separators=(',',':'))
+    old=path.read_text(encoding='utf-8')
+    if old==new:
+        print(json.dumps({'ok':True,'matched':matched,'changed':0,'disabled':disabled,'unchanged':True},ensure_ascii=False));return
     tmp=path.with_suffix('.tmp');tmp.write_text(new,encoding='utf-8');tmp.replace(path)
     print(json.dumps({'ok':True,'matched':matched,'changed':changed,'disabled':disabled,'source_max_modified':newest},ensure_ascii=False))
 
