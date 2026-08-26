@@ -64,6 +64,7 @@ try{
  if(get('agence_web_digital_89').some(x=>/culture et.*création|effets visuels|cinéma|cinema/i.test(x))) throw Error('digital culture false positive');
  if(get('btp_cash_89').some(x=>/culture|cinéma|cinema|horizon europe/i.test(x))) throw Error('cash irrelevant false positive');
  if(typeof window.AideRadarV4!=="object" || window.AideRadarV4.version!=="4.0.0") throw Error('V4 layer missing');
+ if(typeof window.AideRadarV5!=="object" || window.AideRadarV5.version!=="5.0.0") throw Error('V5 product layer missing');
  const trustAid=DB.find(a=>String(a.id)==='3596');
  const trust=window.AideRadarV4.trustForAid(trustAid);
  if(!trust.some(x=>/Lien financeur disponible/.test(x.text))) throw Error('V4 source trace missing');

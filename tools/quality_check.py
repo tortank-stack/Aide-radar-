@@ -7,11 +7,11 @@ m=re.search(r'const AIDERADAR_EMBEDDED_DB=(\{.*?\});\n\nasync function loadDB\(\
 assert m,'base embedded missing';d=json.loads(m.group(1));a=d.get('aides',[])
 assert len(a)>=2000,len(a)
 ids=[str(x.get('id') or x.get('id_aid') or '') for x in a];assert len(ids)==len(set(ids)),'duplicate ids'
-assert 'V4.0 PILOTE' in s
+assert 'V5.0 BÊTA PUBLIQUE' in s
 assert 'v3SyncNow' in s and 'data.gouv.fr/api/1/datasets' in s
 assert 'AideRadar V4.0 — traçabilité + mode pilote' in s and 'AideRadarV4' in s
-# Regression sentinels from the reference scenario
-n={x.get('nom'):x for x in a}
+assert 'AideRadar V5.0 — public beta / product layer' in s and 'AideRadarV5' in s
+assert 'Confidentialité' in s and 'Donner un avis' in s and 'Installer sur iPhone' in s
 assert any('Initiative 89' in (x.get('nom') or '') for x in a)
 assert any('Avance remboursable pour la création et la reprise des TPE' in (x.get('nom') or '') for x in a)
-print(json.dumps({'ok':True,'aides':len(a),'version':'4.0.0'},ensure_ascii=False))
+print(json.dumps({'ok':True,'aides':len(a),'version':'5.0.0'},ensure_ascii=False))
