@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Supabase AideRadar</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:24px;max-width:700px;margin:auto}
+button{font-size:18px;padding:14px 18px;border:0;border-radius:12px;background:#2563eb;color:white;font-weight:700}
+pre{white-space:pre-wrap;word-break:break-word;background:#f3f4f6;padding:14px;border-radius:12px;margin-top:16px}
+.ok{color:#067647}.bad{color:#b42318}
+</style>
+</head>
+<body>
+<h1>Test Supabase AideRadar</h1>
+<p>Ce test contourne AideRadar et teste uniquement l'envoi vers Supabase.</p>
+<button id="run">Tester l'envoi</button>
+<pre id="out">Prêt.</pre>
+<script>
+const endpoint = 'https://lopfrocmaynzrxolmsvjp.supabase.co/rest/v1/pilot_feedback';
+const apiKey = 'sb_publishable_0FsxjsUl1D_ACkqz3AiaBQ_ueo9RY4J';
+const out = document.getElementById('out');
+document.getElementById('run').addEventListener('click', async () => {
+  out.className = '';
+  out.textContent = 'Envoi en cours…';
+  const payload = {
+    app_version:'6.0',
+    activity:'test-api',
+    department:'89',
+    project:'test connexion',
+    budget:1,
+    overall_feedback:'good',
+    results:[]
+  };
+  try {
+    const r = await fetch(endpoint, {
+      method:'POST',
+      mode:'cors',
+      cache:'no-store',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':apiKey,
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify(payload)
+    });
+    const body = await r.text();
+    out.className = r.ok ? 'ok' : 'bad';
+    out.textContent = 'HTTP '+r.status+' '+r.statusText+'\n\n'+(body||'(réponse vide)');
+  } catch(e) {
+    out.className='bad';
+    out.textContent='ERREUR NAVIGATEUR\n\n'+String((e&&e.message)||e);
+  }
+});
+</script>
+</body>
+</html>
